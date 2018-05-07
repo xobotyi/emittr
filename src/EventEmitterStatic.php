@@ -20,7 +20,7 @@ class EventEmitterStatic
     public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
 
     protected static $staticListeners    = [];
-    private static   $staticMaxListeners = 10;
+    protected static $staticMaxListeners = 10;
 
     public static function __callStatic($name, $arguments) {
         if (method_exists(self::class, '_' . $name . 'Static')) {
@@ -31,21 +31,24 @@ class EventEmitterStatic
     }
 
     private static function _emitStatic(string $evtName, $payload = null) :void {
-        self::propagateEvent(new Event($evtName, $payload, get_called_class()), self::$staticListeners);
+        $event = new Event($evtName, $payload, get_called_class());
+        if (self::propagateEvent($event, self::$staticListeners)) {
+            EventEmitterGlobal::propagateClassEvent($event);
+        }
     }
 
     protected static function propagateEvent(Event $evt, array &$listeners) :bool {
-        if (!isset($listeners[$evt->getEventName()])) {
+        if (!($listeners = &$listeners[$evt->getEventName()] ?? false)) {
             return true;
         }
 
         $res = true;
 
-        foreach ($listeners[$evt->getEventName()] as $key => &$listener) {
+        foreach ($listeners as $key => &$listener) {
             call_user_func($listener[1], $evt);
 
             if ($listener[0]) {
-                unset($listeners[$evt->getEventName()][$key]);
+                unset($listeners[$key]);
             }
 
             if (!$evt->isPropagatable()) {
@@ -54,8 +57,8 @@ class EventEmitterStatic
             }
         }
 
-        if (!count($listeners[$evt->getEventName()])) {
-            unset($listeners[$evt->getEventName()]);
+        if (!count($listeners)) {
+            unset($listeners);
         }
 
         return $res;

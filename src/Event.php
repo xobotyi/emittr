@@ -27,17 +27,17 @@ class Event
     /**
      * @var string
      */
-    private $src;
+    private $sourceClass;
     /**
      * @var string
      */
-    private $srcClass;
+    private $sourceObject;
 
-    public function __construct(string $evtName, $payload = null, string $sourceClass = null, ?EventEmitter $sourceEmitter = null) {
-        $this->eventName = $evtName;
-        $this->payload   = $payload;
-        $this->srcClass  = $sourceClass;
-        $this->src       = $sourceEmitter;
+    public function __construct(string $evtName, $payload = null, string $sourceClass = null, ?EventEmitter $sourceObject = null) {
+        $this->eventName    = $evtName;
+        $this->payload      = $payload;
+        $this->sourceClass  = $sourceClass;
+        $this->sourceObject = $sourceObject;
     }
 
     public function stopPropagation() :self {
@@ -64,11 +64,11 @@ class Event
         return $this->payload;
     }
 
-    public function getSource() {
-        return $this->src;
+    public function getSourceObject() {
+        return $this->sourceObject;
     }
 
     public function getSourceClass() {
-        return $this->srcClass;
+        return $this->sourceClass;
     }
 }

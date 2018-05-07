@@ -55,7 +55,9 @@ class EventEmitter extends EventEmitterStatic
         $event = new Event($evtName, $payload, get_called_class(), $this);
 
         if (self::propagateEvent($event, $this->listeners)) {
-            self::propagateEvent($event, self::$staticListeners);
+            if(self::propagateEvent($event, self::$staticListeners)){
+                EventEmitterGlobal::propagateClassEvent($event);
+            }
         }
 
         return $this;
