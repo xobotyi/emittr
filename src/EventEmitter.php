@@ -24,17 +24,17 @@ namespace xobotyi\emittr;
  * @method static void      removeListener(string $evtName, callable $cb)
  * @method static void      setMaxListeners(int $listenersCount)
  *
- * // * @method self      emit(string $evtName, $payload = null)
- * // * @method array     getEventNames()
- * // * @method array     getListeners(?string $eventName = null)
- * // * @method int       getMaxListeners()
- * // * @method self      on(string $evtName, callable $cb)
- * // * @method self      once(string $evtName, callable $cb)
- * // * @method self      prependListener(string $evtName, callable $cb)
- * // * @method self      prependOnceListener(string $evtName, callable $cb)
- * // * @method self      removeAllListeners(?string $evtName)
- * // * @method self      removeListener(string $evtName, callable $cb)
- * // * @method self      setMaxListeners(int $listenersCount)
+ * @method self      emit(string $evtName, $payload = null)
+ * @method array     getEventNames()
+ * @method array     getListeners(?string $eventName = null)
+ * @method int       getMaxListeners()
+ * @method self      on(string $evtName, callable $cb)
+ * @method self      once(string $evtName, callable $cb)
+ * @method self      prependListener(string $evtName, callable $cb)
+ * @method self      prependOnceListener(string $evtName, callable $cb)
+ * @method self      removeAllListeners(?string $evtName)
+ * @method self      removeListener(string $evtName, callable $cb)
+ * @method self      setMaxListeners(int $listenersCount)
  *
  * @package xobotyi\emittr
  */
@@ -55,7 +55,7 @@ class EventEmitter extends EventEmitterStatic
         $event = new Event($evtName, $payload, get_called_class(), $this);
 
         if (self::propagateEvent($event, $this->listeners)) {
-            if(self::propagateEvent($event, self::$staticListeners)){
+            if (self::propagateEvent($event, self::$staticListeners[get_called_class()])) {
                 EventEmitterGlobal::propagateClassEvent($event);
             }
         }

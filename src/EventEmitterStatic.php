@@ -12,6 +12,18 @@ namespace xobotyi\emittr;
 /**
  * Class EventEmitterStatic
  *
+ * @method static void      emit(string $evtName, $payload = null)
+ * @method static int       getMaxListeners()
+ * @method static void      setMaxListeners(int $listenersCount)
+ * @method static array     getEventNames()
+ * @method static array     getListeners(?string $eventName = null)
+ * @method static void      on(string $evtName, callable $cb)
+ * @method static void      once(string $evtName, callable $cb)
+ * @method static void      prependListener(string $evtName, callable $cb)
+ * @method static void      prependOnceListener(string $evtName, callable $cb)
+ * @method static void      removeAllListeners(?string $evtName = null)
+ * @method static void      removeListener(string $evtName, callable $cb)
+ *
  * @package xobotyi\emittr
  */
 class EventEmitterStatic
@@ -20,19 +32,22 @@ class EventEmitterStatic
     public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
 
     protected static $staticListeners    = [];
-    protected static $staticMaxListeners = 10;
+    protected static $staticMaxListeners = [];
 
     public static function __callStatic($name, $arguments) {
-        if (method_exists(self::class, '_' . $name . 'Static')) {
-            return forward_static_call_array([self::class, '_' . $name . 'Static'], $arguments);
+        $calledClass = get_called_class();
+        if (method_exists($calledClass, '_' . $name . 'Static')) {
+            return forward_static_call_array([$calledClass, '_' . $name . 'Static'], $arguments);
         }
 
-        throw new \Error('Call to undefined method ' . get_called_class() . '::' . $name . '()');
+        throw new \Error('Call to undefined method ' . $calledClass . '::' . $name . '()');
     }
 
     private static function _emitStatic(string $evtName, $payload = null) :void {
-        $event = new Event($evtName, $payload, get_called_class());
-        if (self::propagateEvent($event, self::$staticListeners)) {
+        $calledClass = get_called_class();
+
+        $event = new Event($evtName, $payload, $calledClass);
+        if (self::propagateEvent($event, self::$staticListeners[$calledClass])) {
             EventEmitterGlobal::propagateClassEvent($event);
         }
     }
@@ -45,6 +60,11 @@ class EventEmitterStatic
         $res = true;
 
         foreach ($listeners as $key => &$listener) {
+            if (($evt->getEventName() === self::EVENT_LISTENER_ADDED || $evt->getEventName() === self::EVENT_LISTENER_REMOVED) &&
+                $listener[1] === $evt->getPayload()['callback']) {
+                continue;
+            }
+
             call_user_func($listener[1], $evt);
 
             if ($listener[0]) {
@@ -65,67 +85,103 @@ class EventEmitterStatic
     }
 
     private static function _getEventNamesStatic() :array {
-        return \array_keys(self::$staticListeners);
+        return \array_keys(self::$staticListeners[get_called_class()] ?? []);
     }
 
     private static function _getListenersStatic(?string $eventName = null) :array {
-        return self::$staticListeners[$eventName] ?? [];
-    }
-
-    private static function _getMaxListenersStatic() :int {
-        return self::$staticMaxListeners;
+        return $eventName ? self::$staticListeners[get_called_class()][$eventName] ?? [] : self::$staticListeners[get_called_class()];
     }
 
     private static function _onStatic(string $evtName, callable $cb) :void {
-        if ((self::$staticListeners[$evtName] ?? false) && self::$staticMaxListeners && count(self::$staticListeners[$evtName]) === self::$staticMaxListeners) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
+        $calledClass = get_called_class();
+
+        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
         }
 
-        self::$staticListeners[$evtName][] = [false, &$cb,];
+        self::$staticListeners[$calledClass][$evtName][] = [false, &$cb,];
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $cb, 'once' => false]);
     }
 
     private static function _onceStatic(string $evtName, callable $cb) :void {
-        if ((self::$staticListeners[$evtName] ?? false) && self::$staticMaxListeners && count(self::$staticListeners[$evtName]) === self::$staticMaxListeners) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
+        $calledClass = get_called_class();
+        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
         }
 
-        self::$staticListeners[$evtName][] = [true, &$cb,];
+        self::$staticListeners[$calledClass][$evtName][] = [true, &$cb,];
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $cb, 'once' => true]);
     }
 
     private static function _prependListenerStatic(string $evtName, callable $cb) :void {
-        if ((self::$staticListeners[$evtName] ?? false) && self::$staticMaxListeners && count(self::$staticListeners[$evtName]) === self::$staticMaxListeners) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
+        $calledClass = get_called_class();
+        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
         }
 
-        array_unshift(self::$staticListeners[$evtName], [false, &$cb,]);
+        if (!isset(self::$staticListeners[$calledClass][$evtName])) {
+            self::$staticListeners[$calledClass][$evtName] = [];
+        }
+
+        array_unshift(self::$staticListeners[$calledClass][$evtName], [false, &$cb,]);
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $cb, 'once' => false]);
     }
 
     private static function _prependOnceListenerStatic(string $evtName, callable $cb) :void {
-        if ((self::$staticListeners[$evtName] ?? false) && self::$staticMaxListeners && count(self::$staticListeners[$evtName]) === self::$staticMaxListeners) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
+        $calledClass = get_called_class();
+        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
         }
 
-        array_unshift(self::$staticListeners[$evtName], [true, &$cb,]);
-    }
-
-    private static function _removeAllListenersStatic(?string $evtName) :void {
-        if ($evtName) {
-            unset(self::$staticListeners[$evtName]);
+        if (!isset(self::$staticListeners[$calledClass][$evtName])) {
+            self::$staticListeners[$calledClass][$evtName] = [];
         }
 
-        self::$staticListeners = [];
+        array_unshift(self::$staticListeners[$calledClass][$evtName], [true, &$cb,]);
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $cb, 'once' => true]);
     }
 
-    private static function _removeListenerStatic(string $evtName, callable $cb) :void {
-        if (!(self::$staticListeners[$evtName] ?? false)) {
+    private static function _removeAllListenersStatic(?string $evtName = null) :void {
+        $calledClass = get_called_class();
+
+        if (!isset(self::$staticListeners[$calledClass])) {
             return;
         }
 
-        self::$staticListeners[$evtName] = array_filter(self::$staticListeners[$evtName], function ($item) use (&$cb) { return $item[1] !== $cb; });
+        if (!$evtName) {
+            foreach (self::$staticListeners as $eventname => &$listeners) {
+                foreach ($listeners as &$cb) {
+                    self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $evtName, 'callback' => &$cb[1]]);
+                }
+            }
 
-        if (empty(self::$staticListeners[$evtName])) {
-            unset(self::$staticListeners[$evtName]);
+            self::$staticListeners[$calledClass] = [];
+
+            return;
         }
+
+        if (self::$staticListeners[$calledClass][$evtName] ?? false) {
+            foreach (self::$staticListeners[$calledClass][$evtName] as &$cb) {
+                self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $evtName, 'callback' => &$cb[1]]);
+            }
+
+            unset(self::$staticListeners[$calledClass][$evtName]);
+        }
+    }
+
+    private static function _removeListenerStatic(string $evtName, callable $cb) :void {
+        $calledClass = get_called_class();
+        if (!(self::$staticListeners[$calledClass][$evtName] ?? false)) {
+            return;
+        }
+
+        self::$staticListeners[$calledClass][$evtName] = array_filter(self::$staticListeners[$calledClass][$evtName], function ($item) use (&$cb) { return $item[1] !== $cb; });
+
+        if (empty(self::$staticListeners[$calledClass][$evtName])) {
+            unset(self::$staticListeners[$calledClass][$evtName]);
+        }
+
+        self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $evtName, 'callback' => &$cb]);
     }
 
     private static function _setMaxListenersStatic(int $listenersCount) :void {
@@ -133,6 +189,10 @@ class EventEmitterStatic
             throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $listenersCount);
         }
 
-        self::$staticMaxListeners = $listenersCount;
+        self::$staticMaxListeners[get_called_class()] = $listenersCount;
+    }
+
+    private static function _getMaxListenersStatic() :int {
+        return self::$staticMaxListeners[get_called_class()] ?? 10;
     }
 }
