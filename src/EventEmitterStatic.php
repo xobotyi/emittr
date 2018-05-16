@@ -12,17 +12,17 @@ namespace xobotyi\emittr;
 /**
  * Class EventEmitterStatic
  *
- * @method static void      emit(string $evtName, $payload = null)
+ * @method static void      emit(string $eventName, $payload = null)
  * @method static int       getMaxListeners()
  * @method static void      setMaxListeners(int $listenersCount)
  * @method static array     getEventNames()
  * @method static array     getListeners(?string $eventName = null)
- * @method static void      on(string $evtName, callable $callback)
- * @method static void      once(string $evtName, callable $callback)
- * @method static void      prependListener(string $evtName, callable $callback)
- * @method static void      prependOnceListener(string $evtName, callable $callback)
- * @method static void      removeAllListeners(?string $evtName = null)
- * @method static void      removeListener(string $evtName, callable $callback)
+ * @method static void      on(string $eventName, callable $callback)
+ * @method static void      once(string $eventName, callable $callback)
+ * @method static void      prependListener(string $eventName, callable $callback)
+ * @method static void      prependOnceListener(string $eventName, callable $callback)
+ * @method static void      removeAllListeners(?string $eventName = null)
+ * @method static void      removeListener(string $eventName, callable $callback)
  *
  * @package xobotyi\emittr
  */
@@ -43,17 +43,17 @@ class EventEmitterStatic
         throw new \Error('Call to undefined method ' . $calledClass . '::' . $name . '()');
     }
 
-    private static function _emitStatic(string $evtName, $payload = null) :void {
+    private static function _emitStatic(string $eventName, $payload = null) :void {
         $calledClass = get_called_class();
 
-        $event = new Event($evtName, $payload, $calledClass);
+        $event = new Event($eventName, $payload, $calledClass);
         if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
             EventEmitterGlobal::propagateClassEvent($event);
         }
     }
 
-    protected static function propagateEvent(Event $evt, array &$listeners) :bool {
-        if (!($listeners = &$listeners[$evt->getEventName()] ?? false)) {
+    protected static function propagateEvent(Event $evt, array &$eventsListeners) :bool {
+        if (!($listeners = &$eventsListeners[$evt->getEventName()] ?? false)) {
             return true;
         }
 
@@ -77,7 +77,7 @@ class EventEmitterStatic
             }
         }
 
-        if (!count($listeners)) {
+        if (empty($listeners)) {
             unset($listeners);
         }
 
@@ -92,95 +92,104 @@ class EventEmitterStatic
         return $eventName ? self::$staticListeners[get_called_class()][$eventName] ?? [] : self::$staticListeners[get_called_class()];
     }
 
-    private static function _onStatic(string $evtName, callable $callback) :void {
+    private static function _onStatic(string $eventName, callable $callback) :void {
         $calledClass = get_called_class();
 
         if (!isset(self::$staticListeners[$calledClass])) {
             self::$staticListeners[$calledClass] = [];
         }
 
-        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, false, false, self::_getMaxListenersStatic());
+        self::storeCallback(self::$staticListeners[$calledClass], $eventName, $callback, false, false, self::_getMaxListenersStatic());
 
-        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => false]);
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => false]);
     }
 
-    private static function _onceStatic(string $evtName, $callback) :void {
+    private static function _onceStatic(string $eventName, $callback) :void {
         $calledClass = get_called_class();
 
         if (!isset(self::$staticListeners[$calledClass])) {
             self::$staticListeners[$calledClass] = [];
         }
 
-        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, true, false, self::_getMaxListenersStatic());
+        self::storeCallback(self::$staticListeners[$calledClass], $eventName, $callback, true, false, self::_getMaxListenersStatic());
 
-        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => true]);
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => true]);
     }
 
-    private static function _prependListenerStatic(string $evtName, $callback) :void {
+    private static function _prependListenerStatic(string $eventName, $callback) :void {
         $calledClass = get_called_class();
 
         if (!isset(self::$staticListeners[$calledClass])) {
             self::$staticListeners[$calledClass] = [];
         }
 
-        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, false, true, self::_getMaxListenersStatic());
+        self::storeCallback(self::$staticListeners[$calledClass], $eventName, $callback, false, true, self::_getMaxListenersStatic());
 
-        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => false]);
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => false]);
     }
 
-    private static function _prependOnceListenerStatic(string $evtName, $callback) :void {
+    private static function _prependOnceListenerStatic(string $eventName, $callback) :void {
         $calledClass = get_called_class();
 
         if (!isset(self::$staticListeners[$calledClass])) {
             self::$staticListeners[$calledClass] = [];
         }
 
-        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, true, true, self::_getMaxListenersStatic());
+        self::storeCallback(self::$staticListeners[$calledClass], $eventName, $callback, true, true, self::_getMaxListenersStatic());
 
-        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => true]);
+        self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => true]);
     }
 
-    private static function _removeAllListenersStatic(?string $evtName = null) :void {
+    private static function _removeAllListenersStatic(?string $eventName = null) :void {
         $calledClass = get_called_class();
 
-        if (!isset(self::$staticListeners[$calledClass])) {
+        if (!(self::$staticListeners[$calledClass] ?? false)) {
             return;
         }
 
-        if (!$evtName) {
-            foreach (self::$staticListeners as $eventname => &$listeners) {
-                foreach ($listeners as &$callback) {
-                    self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $evtName, 'callback' => &$callback[1]]);
-                }
+        if ($eventName) {
+            if (!(self::$staticListeners[$calledClass][$eventName] ?? false)) {
+                return;
             }
 
-            self::$staticListeners[$calledClass] = [];
-
-            return;
-        }
-
-        if (self::$staticListeners[$calledClass][$evtName] ?? false) {
-            foreach (self::$staticListeners[$calledClass][$evtName] as &$callback) {
-                self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $evtName, 'callback' => &$callback[1]]);
+            foreach (self::$staticListeners[$calledClass][$eventName] as &$callback) {
+                self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback[1]]);
             }
 
-            unset(self::$staticListeners[$calledClass][$evtName]);
-        }
-    }
+            unset(self::$staticListeners[$calledClass][$eventName]);
+            self::$staticListeners[$calledClass] = array_filter(self::$staticListeners[$calledClass], function ($item) { return !empty($item); });
 
-    private static function _removeListenerStatic(string $evtName, callable $callback) :void {
-        $calledClass = get_called_class();
-        if (!(self::$staticListeners[$calledClass][$evtName] ?? false)) {
             return;
         }
 
-        self::$staticListeners[$calledClass][$evtName] = array_filter(self::$staticListeners[$calledClass][$evtName], function ($item) use (&$callback) { return $item[1] !== $callback; });
+        foreach (self::$staticListeners[$calledClass] as $eventName => &$listeners) {
+            if (!$listeners) {
+                continue;
+            }
 
-        if (empty(self::$staticListeners[$calledClass][$evtName])) {
-            unset(self::$staticListeners[$calledClass][$evtName]);
+            foreach ($listeners as &$callback) {
+                self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback[1]]);
+            }
         }
 
-        self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $evtName, 'callback' => &$callback]);
+        self::$staticListeners[$calledClass] = [];
+    }
+
+    private static function _removeListenerStatic(string $eventName, callable $callback) :void {
+        $calledClass = get_called_class();
+        if (!(self::$staticListeners[$calledClass][$eventName] ?? false)) {
+            return;
+        }
+
+        self::$staticListeners[$calledClass][$eventName] = array_filter(self::$staticListeners[$calledClass][$eventName],
+            function ($item) use (&$callback) { return $item[1] !== $callback; });
+
+        if (empty(self::$staticListeners[$calledClass][$eventName])) {
+            unset(self::$staticListeners[$calledClass][$eventName]);
+            self::$staticListeners[$calledClass] = array_filter(self::$staticListeners[$calledClass], function ($item) { return !empty($item); });
+        }
+
+        self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback]);
     }
 
     private static function _setMaxListenersStatic(int $listenersCount) :void {

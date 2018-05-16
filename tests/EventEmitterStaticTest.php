@@ -47,9 +47,15 @@ class EventEmitterStaticTest extends TestCase
         $ee::setMaxListeners(5);
         $this->assertEquals(5, $ee::getMaxListeners());
 
+        $ee::removeAllListeners('test0');
+
         $ee::on($ee::EVENT_LISTENER_ADDED, $onListenerAdded);
         $ee::removeAllListeners($ee::EVENT_LISTENER_ADDED);
+        $this->assertEquals([], $ee::getListeners());
+
+        $ee::on($ee::EVENT_LISTENER_ADDED, $onListenerAdded);
         $ee::removeAllListeners();
+        $this->assertEquals([], $ee::getListeners());
     }
 
     public function testEventEmitterEventPropagationStop() {
