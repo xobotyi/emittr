@@ -55,7 +55,7 @@ class EventEmitter extends EventEmitterStatic
         $calledClass = get_called_class();
         $event       = new Event($eventName, $payload, $calledClass, $this);
 
-        if (!$this->listeners || self::propagateEvent($event, $this->listeners)) {
+        if (empty($this->listeners) || self::propagateEvent($event, $this->listeners)) {
             if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
                 EventEmitterGlobal::propagateClassEvent($event);
             }
@@ -101,7 +101,7 @@ class EventEmitter extends EventEmitterStatic
     }
 
     private function _removeAllListeners(?string $eventName = null) :self {
-        if (!$this->listeners) {
+        if (empty($this->listeners)) {
             return $this;
         }
 

@@ -29,7 +29,7 @@ class Event
      */
     private $sourceClass;
     /**
-     * @var string
+     * @var \xobotyi\emittr\EventEmitter
      */
     private $sourceObject;
 
