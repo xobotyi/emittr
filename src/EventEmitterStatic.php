@@ -53,15 +53,17 @@ class EventEmitterStatic
     }
 
     protected static function propagateEvent(Event $evt, array &$eventsListeners) :bool {
-        if (!($listeners = &$eventsListeners[$evt->getEventName()] ?? false)) {
+        $listeners = &$eventsListeners[$evt->getEventName()] ?? false;
+
+        if (!$listeners) {
             return true;
         }
 
         $res = true;
 
         foreach ($listeners as $key => &$listener) {
-            if (($evt->getEventName() === self::EVENT_LISTENER_ADDED || $evt->getEventName() === self::EVENT_LISTENER_REMOVED) &&
-                $listener[1] === $evt->getPayload()['callback']) {
+            if (in_array($evt->getEventName(), [self::EVENT_LISTENER_ADDED, self::EVENT_LISTENER_REMOVED,])
+                && $listener[1] === $evt->getPayload()['callback']) {
                 continue;
             }
 
