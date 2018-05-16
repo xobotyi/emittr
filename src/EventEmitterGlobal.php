@@ -113,6 +113,18 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::$classesListeners[$className] = [];
     }
 
+    public static function getMaxListeners() :int {
+        return self::$staticMaxListeners[get_called_class()] ?? 10;
+    }
+
+    public static function setMaxListeners(int $listenersCount) :void {
+        if ($listenersCount < 0) {
+            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $listenersCount);
+        }
+
+        self::$staticMaxListeners[get_called_class()] = $listenersCount;
+    }
+
     public static function propagateClassEvent(Event $evt) {
         if (substr($evt->getSourceClass(), 0, 15) === 'class@anonymous') {
             return true;
