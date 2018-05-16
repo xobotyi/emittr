@@ -52,10 +52,11 @@ class EventEmitter extends EventEmitterStatic
     }
 
     private function _emit(string $evtName, $payload = null) :self {
-        $event = new Event($evtName, $payload, get_called_class(), $this);
+        $calledClass = get_called_class();
+        $event       = new Event($evtName, $payload, $calledClass, $this);
 
-        if (self::propagateEvent($event, $this->listeners)) {
-            if (self::propagateEvent($event, self::$staticListeners[get_called_class()])) {
+        if (!$this->listeners || self::propagateEvent($event, $this->listeners)) {
+            if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
                 EventEmitterGlobal::propagateClassEvent($event);
             }
         }

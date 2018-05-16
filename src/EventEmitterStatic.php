@@ -47,7 +47,7 @@ class EventEmitterStatic
         $calledClass = get_called_class();
 
         $event = new Event($evtName, $payload, $calledClass);
-        if (self::propagateEvent($event, self::$staticListeners[$calledClass])) {
+        if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
             EventEmitterGlobal::propagateClassEvent($event);
         }
     }
@@ -95,49 +95,48 @@ class EventEmitterStatic
     private static function _onStatic(string $evtName, callable $callback) :void {
         $calledClass = get_called_class();
 
-        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
+        if (!isset(self::$staticListeners[$calledClass])) {
+            self::$staticListeners[$calledClass] = [];
         }
 
-        self::$staticListeners[$calledClass][$evtName][] = [false, &$callback,];
+        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, false, false, self::_getMaxListenersStatic());
+
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => false]);
     }
 
-    private static function _onceStatic(string $evtName, callable $callback) :void {
+    private static function _onceStatic(string $evtName, $callback) :void {
         $calledClass = get_called_class();
-        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
+
+        if (!isset(self::$staticListeners[$calledClass])) {
+            self::$staticListeners[$calledClass] = [];
         }
 
-        self::$staticListeners[$calledClass][$evtName][] = [true, &$callback,];
+        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, true, false, self::_getMaxListenersStatic());
+
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => true]);
     }
 
-    private static function _prependListenerStatic(string $evtName, callable $callback) :void {
+    private static function _prependListenerStatic(string $evtName, $callback) :void {
         $calledClass = get_called_class();
-        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
+
+        if (!isset(self::$staticListeners[$calledClass])) {
+            self::$staticListeners[$calledClass] = [];
         }
 
-        if (!isset(self::$staticListeners[$calledClass][$evtName])) {
-            self::$staticListeners[$calledClass][$evtName] = [];
-        }
+        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, false, true, self::_getMaxListenersStatic());
 
-        array_unshift(self::$staticListeners[$calledClass][$evtName], [false, &$callback,]);
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => false]);
     }
 
-    private static function _prependOnceListenerStatic(string $evtName, callable $callback) :void {
+    private static function _prependOnceListenerStatic(string $evtName, $callback) :void {
         $calledClass = get_called_class();
-        if ((self::$staticListeners[$calledClass][$evtName] ?? false) && self::_getMaxListenersStatic() && count(self::$staticListeners[$calledClass][$evtName]) === self::_getMaxListenersStatic()) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . $calledClass);
+
+        if (!isset(self::$staticListeners[$calledClass])) {
+            self::$staticListeners[$calledClass] = [];
         }
 
-        if (!isset(self::$staticListeners[$calledClass][$evtName])) {
-            self::$staticListeners[$calledClass][$evtName] = [];
-        }
+        self::storeCallback(self::$staticListeners[$calledClass], $evtName, $callback, true, true, self::_getMaxListenersStatic());
 
-        array_unshift(self::$staticListeners[$calledClass][$evtName], [true, &$callback,]);
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $evtName, 'callback' => $callback, 'once' => true]);
     }
 
@@ -194,5 +193,29 @@ class EventEmitterStatic
 
     private static function _getMaxListenersStatic() :int {
         return self::$staticMaxListeners[get_called_class()] ?? 10;
+    }
+
+    protected static function isValidCallback($callback) :bool {
+        return is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
+    }
+
+    protected static function storeCallback(array &$arrayToStore, string $eventName, &$callback, bool $once = false, bool $prepend = false, ?int $maxListeners = null) :void {
+        if (!self::isValidCallback($callback)) {
+            throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call");
+        }
+
+        $maxListeners = $maxListeners === null ? self::_getMaxListenersStatic() : $maxListeners;
+
+        if (($arrayToStore[$eventName] ?? false) && $maxListeners && count($arrayToStore[$eventName]) === $maxListeners) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $eventName);
+        }
+
+        if (!isset($arrayToStore[$eventName])) {
+            $arrayToStore[$eventName] = [];
+        }
+
+        $prepend
+            ? array_unshift($arrayToStore[$eventName], [$once, $callback])
+            : $arrayToStore[$eventName][] = [$once, $callback];
     }
 }

@@ -17,23 +17,30 @@ final class EventEmitterGlobal extends EventEmitterStatic
 
     public static function loadClassesEventListeners(array $classesListeners) :void {
         foreach ($classesListeners as $className => &$listeners) {
-            foreach ($listeners as $evtName => $callback) {
-                if ((self::$classesListeners[$className][$evtName] ?? false) && self::$staticMaxListeners && count(self::$classesListeners[$className][$evtName]) === self::$staticMaxListeners) {
-                    throw new Exception\EventEmitterGlobal("Maximum amount of listeners reached for event " . $evtName . " of " . $className);
-                }
+            foreach ($listeners as $eventName => &$callbacks) {
+                self::$classesListeners[$className] = self::$classesListeners[$className] ?? [];
 
-                if (is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]))) {
-                    self::$classesListeners[$className][$evtName][] = [false, &$callback,];
+                if (self::isValidCallback($callbacks)) {
+                    self::storeCallback(self::$classesListeners[$className], $eventName, $callbacks);
+
+                    continue;
+                }
+                else if (is_array($callbacks)) {
+                    foreach ($callbacks as &$callback) {
+                        self::storeCallback(self::$classesListeners[$className], $eventName, $callback);
+                    }
+
+                    continue;
                 }
                 else {
-                    throw new Exception\EventEmitterGlobal("Event callback has to be a callable or an array of two elements representing classname and method to call");
+                    throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call or array of them");
                 }
             }
         }
     }
 
-    public static function getListeners(?string $className = null) :array {
-        return $className ? self::$classesListeners[$className] : self::$classesListeners;
+    public static function getListeners(?string $className = null, ?string $eventName = null) :array {
+        return $className ? $eventName ? self::$classesListeners[$className][$eventName] ?? [] : self::$classesListeners[$className] ?? [] : self::$classesListeners;
     }
 
     public static function propagateClassEvent(Event $evt) {

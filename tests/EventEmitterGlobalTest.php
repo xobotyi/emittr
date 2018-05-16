@@ -21,32 +21,50 @@ class EventEmitterGlobalTest extends TestCase
 
         EventEmitterGlobal::loadClassesEventListeners([
                                                           EmitterTest::class => [
-                                                              'test' => function (Event $e) { },
+                                                              'test0'  => function (Event $e) { },
+                                                              'fooBar' => ['Bar', 'baz'],
+                                                              'boo'    => [
+                                                                  function (Event $e) { },
+                                                                  ['Bar', 'baz'],
+                                                              ],
                                                           ],
                                                       ]);
 
         $this->assertEquals([
                                 EmitterTest::class => [
-                                    'test' => [[false, function (Event $e) { }]],
+                                    'test0'  => [[false, function (Event $e) { }]],
+                                    'fooBar' => [[false, ['Bar', 'baz']]],
+                                    'boo'    => [[false, function (Event $e) { }], [false, ['Bar', 'baz']]],
                                 ],
                             ], EventEmitterGlobal::getListeners());
 
         EventEmitterGlobal::setMaxListeners(0);
         $this->assertEquals(0, EventEmitterGlobal::getMaxListeners());
+
+        $ee->emit('test');
     }
 
     public function testEventEmitterGlobalExceptionMaxListeners() {
-        $ee = new EmitterTest();
-
         EventEmitterGlobal::setMaxListeners(2);
 
-        $this->expectException(Exception\EventEmitterGlobal::class);
+        $this->expectException(Exception\EventEmitter::class);
         EventEmitterGlobal::loadClassesEventListeners([
                                                           EmitterTest::class => [
-                                                              'test' => [
+                                                              'test1' => [
                                                                   function (Event $e) { },
                                                                   function (Event $e) { },
                                                                   function (Event $e) { },
+                                                              ],
+                                                          ],
+                                                      ]);
+    }
+
+    public function testEventEmitterGlobalExceptionNotCallable() {
+        $this->expectException(Exception\EventEmitter::class);
+        EventEmitterGlobal::loadClassesEventListeners([
+                                                          EmitterTest::class => [
+                                                              'test2' => [
+                                                                  null,
                                                               ],
                                                           ],
                                                       ]);
