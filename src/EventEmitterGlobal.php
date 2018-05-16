@@ -44,6 +44,75 @@ final class EventEmitterGlobal extends EventEmitterStatic
         return $className ? $eventName ? self::$classesListeners[$className][$eventName] ?? [] : self::$classesListeners[$className] ?? [] : self::$classesListeners;
     }
 
+    public static function __callStatic($name, $arguments) {
+        throw new \Error('Call to undefined method ' . get_called_class() . '::' . $name . '()');
+    }
+
+    public static function on(string $className, string $eventName, $callback) :void {
+        if (!(self::$classesListeners[$className])) {
+            self::$classesListeners[$className] = [];
+        }
+
+        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, false, false, self::$staticMaxListeners[get_called_class()] ?? 10);
+    }
+
+    public static function once(string $className, string $eventName, $callback) :void {
+        if (!(self::$classesListeners[$className])) {
+            self::$classesListeners[$className] = [];
+        }
+
+        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, true, false, self::$staticMaxListeners[get_called_class()] ?? 10);
+    }
+
+    public static function prependListener(string $className, string $eventName, $callback) :void {
+        if (!(self::$classesListeners[$className])) {
+            self::$classesListeners[$className] = [];
+        }
+
+        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, false, true, self::$staticMaxListeners[get_called_class()] ?? 10);
+    }
+
+    public static function prependOnceListener(string $className, string $eventName, $callback) :void {
+        if (!(self::$classesListeners[$className])) {
+            self::$classesListeners[$className] = [];
+        }
+
+        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, true, true, self::$staticMaxListeners[get_called_class()] ?? 10);
+    }
+
+    public static function removeListener(string $className, string $eventName, $callback) :void {
+        if (!(self::$classesListeners[$className][$eventName] ?? false)) {
+            return;
+        }
+
+        self::$classesListeners[$className][$eventName] = array_filter(self::$classesListeners[$className][$eventName],
+            function ($item) use (&$callback) { return $item[1] !== $callback; });
+
+        if (empty(self::$classesListeners[$className][$eventName])) {
+            unset(self::$classesListeners[$className][$eventName]);
+            self::$classesListeners[$className] = array_filter(self::$classesListeners[$className], function ($item) { return !empty($item); });
+        }
+    }
+
+    public static function removeAllListeners(string $className, string $eventName) :void {
+        if (!(self::$classesListeners[$className] ?? false)) {
+            return;
+        }
+
+        if ($eventName) {
+            if (!(self::$classesListeners[$className][$eventName] ?? false)) {
+                return;
+            }
+
+            unset(self::$classesListeners[$className][$eventName]);
+            self::$classesListeners[$className] = array_filter(self::$classesListeners[$className], function ($item) { return !empty($item); });
+
+            return;
+        }
+
+        self::$classesListeners[$className] = [];
+    }
+
     public static function propagateClassEvent(Event $evt) {
         if (substr($evt->getSourceClass(), 0, 15) === 'class@anonymous') {
             return true;

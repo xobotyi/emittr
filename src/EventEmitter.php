@@ -76,25 +76,25 @@ class EventEmitter extends EventEmitterStatic
         return $this->maxListeners;
     }
 
-    private function _on(string $eventName, callable $callback) :self {
+    private function _on(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, false, false, $this->maxListeners);
 
         return $this;
     }
 
-    private function _once(string $eventName, callable $callback) :self {
+    private function _once(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, true, false, $this->maxListeners);
 
         return $this;
     }
 
-    private function _prependListener(string $eventName, callable $callback) :self {
+    private function _prependListener(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, false, true, $this->maxListeners);
 
         return $this;
     }
 
-    private function _prependOnceListener(string $eventName, callable $callback) :self {
+    private function _prependOnceListener(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, true, true, $this->maxListeners);
 
         return $this;
@@ -134,7 +134,7 @@ class EventEmitter extends EventEmitterStatic
         return $this;
     }
 
-    private function _removeListener(string $eventName, callable $callback) :self {
+    private function _removeListener(string $eventName, $callback) :self {
         if (!($this->listeners[$eventName] ?? false)) {
             return $this;
         }
