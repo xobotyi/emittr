@@ -16,24 +16,24 @@ namespace xobotyi\emittr;
  * @method static array     getEventNames()
  * @method static array     getListeners(?string $eventName = null)
  * @method static int       getMaxListeners()
- * @method static void      on(string $evtName, callable $cb)
- * @method static void      once(string $evtName, callable $cb)
- * @method static void      prependListener(string $evtName, callable $cb)
- * @method static void      prependOnceListener(string $evtName, callable $cb)
+ * @method static void      on(string $evtName, callable $callback)
+ * @method static void      once(string $evtName, callable $callback)
+ * @method static void      prependListener(string $evtName, callable $callback)
+ * @method static void      prependOnceListener(string $evtName, callable $callback)
  * @method static void      removeAllListeners(?string $evtName)
- * @method static void      removeListener(string $evtName, callable $cb)
+ * @method static void      removeListener(string $evtName, callable $callback)
  * @method static void      setMaxListeners(int $listenersCount)
  *
  * @method self      emit(string $evtName, $payload = null)
  * @method array     getEventNames()
  * @method array     getListeners(?string $eventName = null)
  * @method int       getMaxListeners()
- * @method self      on(string $evtName, callable $cb)
- * @method self      once(string $evtName, callable $cb)
- * @method self      prependListener(string $evtName, callable $cb)
- * @method self      prependOnceListener(string $evtName, callable $cb)
+ * @method self      on(string $evtName, callable $callback)
+ * @method self      once(string $evtName, callable $callback)
+ * @method self      prependListener(string $evtName, callable $callback)
+ * @method self      prependOnceListener(string $evtName, callable $callback)
  * @method self      removeAllListeners(?string $evtName)
- * @method self      removeListener(string $evtName, callable $cb)
+ * @method self      removeListener(string $evtName, callable $callback)
  * @method self      setMaxListeners(int $listenersCount)
  *
  * @package xobotyi\emittr
@@ -75,42 +75,42 @@ class EventEmitter extends EventEmitterStatic
         return $this->maxListeners;
     }
 
-    private function _on(string $evtName, callable $cb) :self {
+    private function _on(string $evtName, callable $callback) :self {
         if (($this->listeners[$evtName] ?? false) && $this->maxListeners && count($this->listeners[$evtName]) === $this->maxListeners) {
             throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
         }
 
-        $this->listeners[$evtName][] = [false, &$cb,];
+        $this->listeners[$evtName][] = [false, &$callback,];
 
         return $this;
     }
 
-    private function _once(string $evtName, callable $cb) :self {
+    private function _once(string $evtName, callable $callback) :self {
         if (($this->listeners[$evtName] ?? false) && $this->maxListeners && count($this->listeners[$evtName]) === $this->maxListeners) {
             throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
         }
 
-        $this->listeners[$evtName][] = [true, &$cb,];
+        $this->listeners[$evtName][] = [true, &$callback,];
 
         return $this;
     }
 
-    private function _prependListener(string $evtName, callable $cb) :self {
+    private function _prependListener(string $evtName, callable $callback) :self {
         if (($this->listeners[$evtName] ?? false) && $this->maxListeners && count($this->listeners[$evtName]) === $this->maxListeners) {
             throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
         }
 
-        array_unshift($this->listeners[$evtName], [false, &$cb,]);
+        array_unshift($this->listeners[$evtName], [false, &$callback,]);
 
         return $this;
     }
 
-    private function _prependOnceListener(string $evtName, callable $cb) :self {
+    private function _prependOnceListener(string $evtName, callable $callback) :self {
         if (($this->listeners[$evtName] ?? false) && $this->maxListeners && count($this->listeners[$evtName]) === $this->maxListeners) {
             throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $evtName . " of " . get_called_class());
         }
 
-        array_unshift($this->listeners[$evtName], [true, &$cb,]);
+        array_unshift($this->listeners[$evtName], [true, &$callback,]);
 
         return $this;
     }
@@ -125,12 +125,12 @@ class EventEmitter extends EventEmitterStatic
         return $this;
     }
 
-    private function _removeListener(string $evtName, callable $cb) :self {
+    private function _removeListener(string $evtName, callable $callback) :self {
         if (!($this->listeners[$evtName] ?? false)) {
             return $this;
         }
 
-        $this->listeners[$evtName] = array_filter($this->listeners[$evtName], function ($item) use (&$cb) { return $item[1] !== $cb; });
+        $this->listeners[$evtName] = array_filter($this->listeners[$evtName], function ($item) use (&$callback) { return $item[1] !== $callback; });
 
         if (empty($this->listeners[$evtName])) {
             unset($this->listeners[$evtName]);

@@ -3,7 +3,6 @@
   "description": "rsync wrapper library for php",
   "type": "library",
   "keywords": [
-    "php",
     "event",
     "emitter",
     "event-emitter"

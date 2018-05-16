@@ -17,13 +17,13 @@ final class EventEmitterGlobal extends EventEmitterStatic
 
     public static function loadClassesEventListeners(array $classesListeners) :void {
         foreach ($classesListeners as $className => &$listeners) {
-            foreach ($listeners as $evtName => $cb) {
+            foreach ($listeners as $evtName => $callback) {
                 if ((self::$classesListeners[$className][$evtName] ?? false) && self::$staticMaxListeners && count(self::$classesListeners[$className][$evtName]) === self::$staticMaxListeners) {
                     throw new Exception\EventEmitterGlobal("Maximum amount of listeners reached for event " . $evtName . " of " . $className);
                 }
 
-                if (is_callable($cb) || (is_array($cb) && count($cb) === 2 && is_string($cb[0]) && is_string($cb[1]))) {
-                    self::$classesListeners[$className][$evtName][] = [false, &$cb,];
+                if (is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]))) {
+                    self::$classesListeners[$className][$evtName][] = [false, &$callback,];
                 }
                 else {
                     throw new Exception\EventEmitterGlobal("Event callback has to be a callable or an array of two elements representing classname and method to call");
