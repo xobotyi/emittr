@@ -8,6 +8,11 @@
 namespace xobotyi\emittr\Exception;
 
 
+/**
+ * Class EventEmitter
+ *
+ * @package xobotyi\emittr\Exception
+ */
 class EventEmitter extends \Exception
 {
 

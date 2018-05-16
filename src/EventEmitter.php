@@ -38,11 +38,28 @@ namespace xobotyi\emittr;
  *
  * @package xobotyi\emittr
  */
+/**
+ * Class EventEmitter
+ *
+ * @package xobotyi\emittr
+ */
 class EventEmitter extends EventEmitterStatic
 {
+    /**
+     * @var array
+     */
     private $listeners    = [];
+    /**
+     * @var int
+     */
     private $maxListeners = 10;
 
+    /**
+     * @param $name
+     * @param $arguments
+     *
+     * @return mixed
+     */
     public function __call($name, $arguments) {
         if (method_exists($this, '_' . $name)) {
             return call_user_func_array([$this, '_' . $name], $arguments);
@@ -51,6 +68,12 @@ class EventEmitter extends EventEmitterStatic
         throw new \Error('Call to undefined method ' . get_called_class() . '->' . $name . '()');
     }
 
+    /**
+     * @param string $eventName
+     * @param null   $payload
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     */
     private function _emit(string $eventName, $payload = null) :self {
         $calledClass = get_called_class();
         $event       = new Event($eventName, $payload, $calledClass, $this);
@@ -64,42 +87,86 @@ class EventEmitter extends EventEmitterStatic
         return $this;
     }
 
+    /**
+     * @return array
+     */
     private function _getEventNames() :array {
         return \array_keys($this->listeners);
     }
 
+    /**
+     * @param null|string $eventName
+     *
+     * @return array
+     */
     private function _getListeners(?string $eventName = null) :array {
         return $this->listeners[$eventName] ?? [];
     }
 
+    /**
+     * @return int
+     */
     private function _getMaxListeners() :int {
         return $this->maxListeners;
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private function _on(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, false, false, $this->maxListeners);
 
         return $this;
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private function _once(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, true, false, $this->maxListeners);
 
         return $this;
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private function _prependListener(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, false, true, $this->maxListeners);
 
         return $this;
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private function _prependOnceListener(string $eventName, $callback) :self {
         self::storeCallback($this->listeners, $eventName, $callback, true, true, $this->maxListeners);
 
         return $this;
     }
 
+    /**
+     * @param null|string $eventName
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     */
     private function _removeAllListeners(?string $eventName = null) :self {
         if (empty($this->listeners)) {
             return $this;
@@ -134,6 +201,12 @@ class EventEmitter extends EventEmitterStatic
         return $this;
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     */
     private function _removeListener(string $eventName, $callback) :self {
         if (!($this->listeners[$eventName] ?? false)) {
             return $this;
@@ -150,6 +223,11 @@ class EventEmitter extends EventEmitterStatic
         return $this;
     }
 
+    /**
+     * @param int $listenersCount
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     */
     private function _setMaxListeners(int $listenersCount) :self {
         if ($listenersCount <= 0) {
             throw new \InvalidArgumentException('Listeners count must be greater than 0, got ' . $listenersCount);

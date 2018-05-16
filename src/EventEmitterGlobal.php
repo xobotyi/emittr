@@ -8,13 +8,23 @@
 namespace xobotyi\emittr;
 
 
+/**
+ * Class EventEmitterGlobal
+ *
+ * @package xobotyi\emittr
+ */
 final class EventEmitterGlobal extends EventEmitterStatic
 {
     /**
-     * @var array[]
+     * @var array[string=>array[bool,array[string,string]|callable]]
      */
     private static $classesListeners = [];
 
+    /**
+     * @param array $classesListeners
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     public static function loadClassesEventListeners(array $classesListeners) :void {
         foreach ($classesListeners as $className => &$listeners) {
             if (!isset(self::$classesListeners[$className])) {
@@ -40,14 +50,33 @@ final class EventEmitterGlobal extends EventEmitterStatic
         }
     }
 
+    /**
+     * @param null|string $className
+     * @param null|string $eventName
+     *
+     * @return array
+     */
     public static function getListeners(?string $className = null, ?string $eventName = null) :array {
         return $className ? $eventName ? self::$classesListeners[$className][$eventName] ?? [] : self::$classesListeners[$className] ?? [] : self::$classesListeners;
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     *
+     * @return mixed|void
+     */
     public static function __callStatic($name, $arguments) {
         throw new \Error('Call to undefined method ' . get_called_class() . '::' . $name . '()');
     }
 
+    /**
+     * @param string $className
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     public static function on(string $className, string $eventName, $callback) :void {
         if (!(self::$classesListeners[$className])) {
             self::$classesListeners[$className] = [];
@@ -56,6 +85,13 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::storeCallback(self::$classesListeners[$className], $eventName, $callback, false, false, self::$staticMaxListeners[get_called_class()] ?? 10);
     }
 
+    /**
+     * @param string $className
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     public static function once(string $className, string $eventName, $callback) :void {
         if (!(self::$classesListeners[$className])) {
             self::$classesListeners[$className] = [];
@@ -64,6 +100,13 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::storeCallback(self::$classesListeners[$className], $eventName, $callback, true, false, self::$staticMaxListeners[get_called_class()] ?? 10);
     }
 
+    /**
+     * @param string $className
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     public static function prependListener(string $className, string $eventName, $callback) :void {
         if (!(self::$classesListeners[$className])) {
             self::$classesListeners[$className] = [];
@@ -72,6 +115,13 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::storeCallback(self::$classesListeners[$className], $eventName, $callback, false, true, self::$staticMaxListeners[get_called_class()] ?? 10);
     }
 
+    /**
+     * @param string $className
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     public static function prependOnceListener(string $className, string $eventName, $callback) :void {
         if (!(self::$classesListeners[$className])) {
             self::$classesListeners[$className] = [];
@@ -80,6 +130,11 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::storeCallback(self::$classesListeners[$className], $eventName, $callback, true, true, self::$staticMaxListeners[get_called_class()] ?? 10);
     }
 
+    /**
+     * @param string $className
+     * @param string $eventName
+     * @param        $callback
+     */
     public static function removeListener(string $className, string $eventName, $callback) :void {
         if (!(self::$classesListeners[$className][$eventName] ?? false)) {
             return;
@@ -94,6 +149,10 @@ final class EventEmitterGlobal extends EventEmitterStatic
         }
     }
 
+    /**
+     * @param string $className
+     * @param string $eventName
+     */
     public static function removeAllListeners(string $className, string $eventName) :void {
         if (!(self::$classesListeners[$className] ?? false)) {
             return;
@@ -113,10 +172,16 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::$classesListeners[$className] = [];
     }
 
+    /**
+     * @return int
+     */
     public static function getMaxListeners() :int {
         return self::$staticMaxListeners[get_called_class()] ?? 10;
     }
 
+    /**
+     * @param int $listenersCount
+     */
     public static function setMaxListeners(int $listenersCount) :void {
         if ($listenersCount < 0) {
             throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $listenersCount);
@@ -125,6 +190,11 @@ final class EventEmitterGlobal extends EventEmitterStatic
         self::$staticMaxListeners[get_called_class()] = $listenersCount;
     }
 
+    /**
+     * @param \xobotyi\emittr\Event $evt
+     *
+     * @return bool
+     */
     public static function propagateClassEvent(Event $evt) {
         $listeners = &self::$classesListeners[$evt->getSourceClass()][$evt->getEventName()] ?? false;
 

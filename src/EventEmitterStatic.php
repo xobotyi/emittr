@@ -31,9 +31,21 @@ class EventEmitterStatic
     public const EVENT_LISTENER_ADDED   = 'listenerAdded';
     public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
 
-    protected static $staticListeners    = [];
+    /**
+     * @var array[string=>array[bool,array[string,string]|callable]]
+     */
+    protected static $staticListeners = [];
+    /**
+     * @var array[string=>int]
+     */
     protected static $staticMaxListeners = [];
 
+    /**
+     * @param $name
+     * @param $arguments
+     *
+     * @return mixed
+     */
     public static function __callStatic($name, $arguments) {
         $calledClass = get_called_class();
         if (method_exists($calledClass, '_' . $name . 'Static')) {
@@ -43,6 +55,10 @@ class EventEmitterStatic
         throw new \Error('Call to undefined method ' . $calledClass . '::' . $name . '()');
     }
 
+    /**
+     * @param string $eventName
+     * @param null   $payload
+     */
     private static function _emitStatic(string $eventName, $payload = null) :void {
         $calledClass = get_called_class();
 
@@ -52,6 +68,12 @@ class EventEmitterStatic
         }
     }
 
+    /**
+     * @param \xobotyi\emittr\Event $evt
+     * @param array                 $eventsListeners
+     *
+     * @return bool
+     */
     protected static function propagateEvent(Event $evt, array &$eventsListeners) :bool {
         $listeners = &$eventsListeners[$evt->getEventName()] ?? false;
 
@@ -86,14 +108,28 @@ class EventEmitterStatic
         return $res;
     }
 
+    /**
+     * @return array
+     */
     private static function _getEventNamesStatic() :array {
         return \array_keys(self::$staticListeners[get_called_class()] ?? []);
     }
 
+    /**
+     * @param null|string $eventName
+     *
+     * @return array
+     */
     private static function _getListenersStatic(?string $eventName = null) :array {
         return $eventName ? self::$staticListeners[get_called_class()][$eventName] ?? [] : self::$staticListeners[get_called_class()];
     }
 
+    /**
+     * @param string   $eventName
+     * @param callable $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private static function _onStatic(string $eventName, callable $callback) :void {
         $calledClass = get_called_class();
 
@@ -106,6 +142,12 @@ class EventEmitterStatic
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => false]);
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private static function _onceStatic(string $eventName, $callback) :void {
         $calledClass = get_called_class();
 
@@ -118,6 +160,12 @@ class EventEmitterStatic
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => true]);
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private static function _prependListenerStatic(string $eventName, $callback) :void {
         $calledClass = get_called_class();
 
@@ -130,6 +178,12 @@ class EventEmitterStatic
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => false]);
     }
 
+    /**
+     * @param string $eventName
+     * @param        $callback
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     private static function _prependOnceListenerStatic(string $eventName, $callback) :void {
         $calledClass = get_called_class();
 
@@ -142,6 +196,9 @@ class EventEmitterStatic
         self::emit(self::EVENT_LISTENER_ADDED, ['eventName' => $eventName, 'callback' => $callback, 'once' => true]);
     }
 
+    /**
+     * @param null|string $eventName
+     */
     private static function _removeAllListenersStatic(?string $eventName = null) :void {
         $calledClass = get_called_class();
 
@@ -177,6 +234,10 @@ class EventEmitterStatic
         self::$staticListeners[$calledClass] = [];
     }
 
+    /**
+     * @param string   $eventName
+     * @param callable $callback
+     */
     private static function _removeListenerStatic(string $eventName, callable $callback) :void {
         $calledClass = get_called_class();
         if (!(self::$staticListeners[$calledClass][$eventName] ?? false)) {
@@ -194,6 +255,9 @@ class EventEmitterStatic
         self::emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback]);
     }
 
+    /**
+     * @param int $listenersCount
+     */
     private static function _setMaxListenersStatic(int $listenersCount) :void {
         if ($listenersCount < 0) {
             throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $listenersCount);
@@ -202,14 +266,32 @@ class EventEmitterStatic
         self::$staticMaxListeners[get_called_class()] = $listenersCount;
     }
 
+    /**
+     * @return int
+     */
     private static function _getMaxListenersStatic() :int {
         return self::$staticMaxListeners[get_called_class()] ?? 10;
     }
 
+    /**
+     * @param $callback
+     *
+     * @return bool
+     */
     protected static function isValidCallback($callback) :bool {
         return is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
     }
 
+    /**
+     * @param array    $arrayToStore
+     * @param string   $eventName
+     * @param          $callback
+     * @param bool     $once
+     * @param bool     $prepend
+     * @param int|null $maxListeners
+     *
+     * @throws \xobotyi\emittr\Exception\EventEmitter
+     */
     protected static function storeCallback(array &$arrayToStore, string $eventName, &$callback, bool $once = false, bool $prepend = false, ?int $maxListeners = null) :void {
         if (!self::isValidCallback($callback)) {
             throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call");
