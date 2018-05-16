@@ -16,7 +16,7 @@ namespace xobotyi\emittr;
 final class EventEmitterGlobal extends EventEmitterStatic
 {
     /**
-     * @var array[string=>array[bool,array[string,string]|callable]]
+     * @var array[]
      */
     private static $classesListeners = [];
 

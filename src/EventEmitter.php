@@ -46,9 +46,9 @@ namespace xobotyi\emittr;
 class EventEmitter extends EventEmitterStatic
 {
     /**
-     * @var array
+     * @var array[]
      */
-    private $listeners    = [];
+    private $listeners = [];
     /**
      * @var int
      */
@@ -70,7 +70,7 @@ class EventEmitter extends EventEmitterStatic
 
     /**
      * @param string $eventName
-     * @param null   $payload
+     * @param mixed  $payload
      *
      * @return \xobotyi\emittr\EventEmitter
      */

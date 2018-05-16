@@ -42,7 +42,7 @@ class Event
      * Event constructor.
      *
      * @param string                            $evtName
-     * @param null                              $payload
+     * @param mixed                             $payload
      * @param string|null                       $sourceClass
      * @param null|\xobotyi\emittr\EventEmitter $sourceObject
      */

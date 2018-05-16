@@ -32,11 +32,11 @@ class EventEmitterStatic
     public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
 
     /**
-     * @var array[string=>array[bool,array[string,string]|callable]]
+     * @var array[]
      */
     protected static $staticListeners = [];
     /**
-     * @var array[string=>int]
+     * @var int[]
      */
     protected static $staticMaxListeners = [];
 
@@ -57,7 +57,7 @@ class EventEmitterStatic
 
     /**
      * @param string $eventName
-     * @param null   $payload
+     * @param mixed   $payload
      */
     private static function _emitStatic(string $eventName, $payload = null) :void {
         $calledClass = get_called_class();
