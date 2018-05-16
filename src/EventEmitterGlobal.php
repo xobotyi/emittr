@@ -17,9 +17,11 @@ final class EventEmitterGlobal extends EventEmitterStatic
 
     public static function loadClassesEventListeners(array $classesListeners) :void {
         foreach ($classesListeners as $className => &$listeners) {
-            foreach ($listeners as $eventName => &$callbacks) {
-                self::$classesListeners[$className] = self::$classesListeners[$className] ?? [];
+            if (!isset(self::$classesListeners[$className])) {
+                self::$classesListeners[$className] = [];
+            }
 
+            foreach ($listeners as $eventName => &$callbacks) {
                 if (self::isValidCallback($callbacks)) {
                     self::storeCallback(self::$classesListeners[$className], $eventName, $callbacks);
 
@@ -32,9 +34,8 @@ final class EventEmitterGlobal extends EventEmitterStatic
 
                     continue;
                 }
-                else {
-                    throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call or array of them");
-                }
+
+                throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call or array of them");
             }
         }
     }
