@@ -5,30 +5,28 @@
  * @License: http://www.opensource.org/licenses/mit-license.php
  */
 
-namespace xobotyi\emittr;
-
 include_once __DIR__ . '/../vendor/autoload.php';
 
-class ClassA extends EventEmitter
+use xobotyi\emittr;
+
+class AwesomeClass extends emittr\EventEmitter
 {
 }
 
-class ClassB extends EventEmitterStatic
+AwesomeClass::on('testEvent', function (emittr\Event $e) { echo $e->getPayload()['message'] . PHP_EOL; });
+
+$awesomeObject = new AwesomeClass();
+$awesomeObject->on('testEvent', function () { echo "Hello world!" . PHP_EOL; });
+
+$awesomeObject->emit('testEvent', ['message' => "eittr is awesome!"]);
+
+emittr\EventEmitterGlobal::on("MostAwesomeClass", "testEvent", 'awesomeCallback');
+
+function awesomeCallback() { echo "eittr is awesome for sure!" . PHP_EOL; }
+
+class MostAwesomeClass extends emittr\EventEmitterStatic
 {
 }
 
-var_dump(ClassA::getListeners('test'));
-ClassB::on('test', function () { });
-var_dump(ClassA::getListeners('test'));
-
-
-ClassA::on('test', function ($e) { var_dump('1'); });
-ClassA::on('test', function ($e) { var_dump('2'); });
-ClassA::on('test', function ($e) { var_dump('3'); });
-EventEmitterGlobal::loadClassesEventListeners(['xobotyi\emittr\ClassA' => ['test' => function ($e) { var_dump(4); }]]);
-
-$a = new ClassA();
-$a->on('test', function (Event $e) {
-    var_dump($e->getSourceClass());
-});
-$a->emit('test');
+MostAwesomeClass::on('testEvent', function () { echo PHP_EOL . "Hello world!" . PHP_EOL; });
+MostAwesomeClass::emit('testEvent');

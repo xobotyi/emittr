@@ -57,7 +57,7 @@ class EventEmitterStatic
 
     /**
      * @param string $eventName
-     * @param mixed   $payload
+     * @param mixed  $payload
      */
     private static function _emitStatic(string $eventName, $payload = null) :void {
         $calledClass = get_called_class();
@@ -279,7 +279,7 @@ class EventEmitterStatic
      * @return bool
      */
     protected static function isValidCallback($callback) :bool {
-        return is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
+        return is_string($callback) || is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
     }
 
     /**

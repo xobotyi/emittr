@@ -78,7 +78,7 @@ final class EventEmitterGlobal extends EventEmitterStatic
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public static function on(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className])) {
+        if (!(self::$classesListeners[$className] ?? false)) {
             self::$classesListeners[$className] = [];
         }
 
@@ -93,7 +93,7 @@ final class EventEmitterGlobal extends EventEmitterStatic
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public static function once(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className])) {
+        if (!(self::$classesListeners[$className] ?? false)) {
             self::$classesListeners[$className] = [];
         }
 
@@ -108,7 +108,7 @@ final class EventEmitterGlobal extends EventEmitterStatic
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public static function prependListener(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className])) {
+        if (!(self::$classesListeners[$className] ?? false)) {
             self::$classesListeners[$className] = [];
         }
 
@@ -123,7 +123,7 @@ final class EventEmitterGlobal extends EventEmitterStatic
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public static function prependOnceListener(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className])) {
+        if (!(self::$classesListeners[$className] ?? false)) {
             self::$classesListeners[$className] = [];
         }
 
