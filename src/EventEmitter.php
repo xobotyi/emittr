@@ -187,7 +187,7 @@ class EventEmitter extends EventEmitterStatic
         }
 
         foreach ($this->listeners as $eventName => &$listeners) {
-            if (!$listeners) {
+            if (empty($listeners)) {
                 continue;
             }
 
