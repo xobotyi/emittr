@@ -1,11 +1,12 @@
 {
   "name": "xobotyi/emittr",
-  "description": "rsync wrapper library for php",
+  "description": "event library for your app",
   "type": "library",
   "keywords": [
     "event",
     "emitter",
-    "event-emitter"
+    "event-emitter",
+    "event-management"
   ],
   "license": "MIT",
   "homepage": "https://github.com/xobotyi/emittr",
