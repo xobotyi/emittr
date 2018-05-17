@@ -196,13 +196,13 @@ final class EventEmitterGlobal extends EventEmitterStatic
      * @return bool
      */
     public static function propagateClassEvent(Event $evt) {
-        $listeners = &self::$classesListeners[$evt->getSourceClass()][$evt->getEventName()] ?? false;
-
-        if (!$listeners) {
+        if (substr($evt->getSourceClass(), 0, 15) === 'class@anonymous') {
             return true;
         }
 
-        if (substr($evt->getSourceClass(), 0, 15) === 'class@anonymous') {
+        $listeners = &self::$classesListeners[$evt->getSourceClass()][$evt->getEventName()] ?? false;
+
+        if (!$listeners) {
             return true;
         }
 

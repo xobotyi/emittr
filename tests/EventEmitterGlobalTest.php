@@ -20,7 +20,7 @@ class EventEmitterGlobalTest extends TestCase
         $ee = new EmitterTest();
 
         $callback1 = function () { };
-        $callback2 = function (Event $e) { };
+        $callback2 = function (Event $e) { $e->stopPropagation(); };
 
         EventEmitterGlobal::loadClassesEventListeners([
                                                           EmitterTest::class => [
@@ -91,7 +91,29 @@ class EventEmitterGlobalTest extends TestCase
                             ], EventEmitterGlobal::getListeners());
         EventEmitterGlobal::removeAllListeners(EmitterTest::class);
 
+        EventEmitterGlobal::on(EmitterTest::class, 'test', $callback1);
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class, 'test');
+        EventEmitterGlobal::once(EmitterTest::class, 'test', $callback1);
+        EventEmitterGlobal::prependListener(EmitterTest::class, 'test', $callback2);
+        EventEmitterGlobal::prependOnceListener(EmitterTest::class, 'test', $callback2);
+        $this->assertEquals([
+                                EmitterTest::class => [
+                                    'test' => [[true, $callback2], [false, $callback2], [true, $callback1]],
+                                ],
+                            ], EventEmitterGlobal::getListeners());
+
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class, 'test');
+        EventEmitterGlobal::prependListener(EmitterTest::class, 'test', $callback2);
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class, 'test');
+        EventEmitterGlobal::prependOnceListener(EmitterTest::class, 'test', $callback2);
+
         $ee->emit('test');
+        EventEmitterGlobal::prependOnceListener(EmitterTest::class, 'test', $callback2);
+
+        $ee = new class extends EventEmitter
+        {
+        };
+        $ee->emit('test');//anonimous classes dews not generate global events;
     }
 
     public function testEventEmitterGlobalExceptionMaxListeners() {
