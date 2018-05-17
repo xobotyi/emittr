@@ -150,10 +150,10 @@ final class EventEmitterGlobal extends EventEmitterStatic
     }
 
     /**
-     * @param string $className
-     * @param string $eventName
+     * @param string      $className
+     * @param string|null $eventName
      */
-    public static function removeAllListeners(string $className, string $eventName) :void {
+    public static function removeAllListeners(string $className, ?string $eventName = null) :void {
         if (!(self::$classesListeners[$className] ?? false)) {
             return;
         }

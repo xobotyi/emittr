@@ -19,12 +19,15 @@ class EventEmitterGlobalTest extends TestCase
     public function testEventEmitterGlobal() {
         $ee = new EmitterTest();
 
+        $callback1 = function () { };
+        $callback2 = function (Event $e) { };
+
         EventEmitterGlobal::loadClassesEventListeners([
                                                           EmitterTest::class => [
-                                                              'test0'  => function (Event $e) { },
+                                                              'test0'  => $callback1,
                                                               'fooBar' => ['Bar', 'baz'],
                                                               'boo'    => [
-                                                                  function (Event $e) { },
+                                                                  $callback2,
                                                                   ['Bar', 'baz'],
                                                               ],
                                                           ],
@@ -32,14 +35,61 @@ class EventEmitterGlobalTest extends TestCase
 
         $this->assertEquals([
                                 EmitterTest::class => [
-                                    'test0'  => [[false, function (Event $e) { }]],
+                                    'test0'  => [[false, $callback1]],
                                     'fooBar' => [[false, ['Bar', 'baz']]],
-                                    'boo'    => [[false, function (Event $e) { }], [false, ['Bar', 'baz']]],
+                                    'boo'    => [[false, $callback2], [false, ['Bar', 'baz']]],
                                 ],
                             ], EventEmitterGlobal::getListeners());
 
         EventEmitterGlobal::setMaxListeners(0);
         $this->assertEquals(0, EventEmitterGlobal::getMaxListeners());
+
+        EventEmitterGlobal::removeListener(EmitterTest::class, 'boo', ['Bar', 'baz']);
+        $this->assertEquals([
+                                EmitterTest::class => [
+                                    'test0'  => [[false, $callback1]],
+                                    'fooBar' => [[false, ['Bar', 'baz']]],
+                                    'boo'    => [[false, $callback2]],
+                                ],
+                            ], EventEmitterGlobal::getListeners());
+        EventEmitterGlobal::removeListener(EmitterTest::class, 'boo', ['Bar', 'baz']);
+        $this->assertEquals([
+                                EmitterTest::class => [
+                                    'test0'  => [[false, $callback1]],
+                                    'fooBar' => [[false, ['Bar', 'baz']]],
+                                    'boo'    => [[false, $callback2]],
+                                ],
+                            ], EventEmitterGlobal::getListeners());
+
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class, 'test0');
+        $this->assertEquals([
+                                EmitterTest::class => [
+                                    'fooBar' => [[false, ['Bar', 'baz']]],
+                                    'boo'    => [[false, $callback2]],
+                                ],
+                            ], EventEmitterGlobal::getListeners());
+
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class, 'test0');
+        $this->assertEquals([
+                                EmitterTest::class => [
+                                    'fooBar' => [[false, ['Bar', 'baz']]],
+                                    'boo'    => [[false, $callback2]],
+                                ],
+                            ], EventEmitterGlobal::getListeners());
+
+        EventEmitterGlobal::removeListener(EmitterTest::class, 'boo', $callback2);
+        $this->assertEquals([
+                                EmitterTest::class => [
+                                    'fooBar' => [[false, ['Bar', 'baz']]],
+                                ],
+                            ], EventEmitterGlobal::getListeners());
+        EventEmitterGlobal::removeListener(EmitterTest::class, 'boo', $callback2);
+
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class);
+        $this->assertEquals([
+                                EmitterTest::class => [],
+                            ], EventEmitterGlobal::getListeners());
+        EventEmitterGlobal::removeAllListeners(EmitterTest::class);
 
         $ee->emit('test');
     }
@@ -68,5 +118,15 @@ class EventEmitterGlobalTest extends TestCase
                                                               ],
                                                           ],
                                                       ]);
+    }
+
+    public function testEventEmitterGlobalExceptionNegativeMaxListeners() {
+        $this->expectException(\InvalidArgumentException::class);
+        EventEmitterGlobal::setMaxListeners(-1);
+    }
+
+    public function testEventEmitterGlobalExceptionWrongMethod() {
+        $this->expectException(\Error::class);
+        EventEmitterGlobal::fooBar();
     }
 }
