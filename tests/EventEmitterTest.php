@@ -10,7 +10,7 @@ namespace xobotyi\emittr;
 
 use PHPUnit\Framework\TestCase;
 
-class EventEmitterTestClass extends EventEmitter
+class EventEmitterTestClass extends EventEmitterOld
 {
 
 }

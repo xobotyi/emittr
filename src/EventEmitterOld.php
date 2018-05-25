@@ -43,7 +43,7 @@ namespace xobotyi\emittr;
  *
  * @package xobotyi\emittr
  */
-class EventEmitter extends EventEmitterStatic
+class EventEmitterOld extends EventEmitterStaticOld
 {
     /**
      * @var array[]
@@ -72,7 +72,7 @@ class EventEmitter extends EventEmitterStatic
      * @param string $eventName
      * @param mixed  $payload
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      */
     private function _emit(string $eventName, $payload = null) :self {
         $calledClass = get_called_class();
@@ -80,7 +80,7 @@ class EventEmitter extends EventEmitterStatic
 
         if (empty($this->listeners) || self::propagateEvent($event, $this->listeners)) {
             if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
-                EventEmitterGlobal::propagateClassEvent($event);
+                EventEmitterGlobalOld::propagateClassEvent($event);
             }
         }
 
@@ -114,7 +114,7 @@ class EventEmitter extends EventEmitterStatic
      * @param string $eventName
      * @param        $callback
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     private function _on(string $eventName, $callback) :self {
@@ -127,7 +127,7 @@ class EventEmitter extends EventEmitterStatic
      * @param string $eventName
      * @param        $callback
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     private function _once(string $eventName, $callback) :self {
@@ -140,7 +140,7 @@ class EventEmitter extends EventEmitterStatic
      * @param string $eventName
      * @param        $callback
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     private function _prependListener(string $eventName, $callback) :self {
@@ -153,7 +153,7 @@ class EventEmitter extends EventEmitterStatic
      * @param string $eventName
      * @param        $callback
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     private function _prependOnceListener(string $eventName, $callback) :self {
@@ -165,7 +165,7 @@ class EventEmitter extends EventEmitterStatic
     /**
      * @param null|string $eventName
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      */
     private function _removeAllListeners(?string $eventName = null) :self {
         if (empty($this->listeners)) {
@@ -205,7 +205,7 @@ class EventEmitter extends EventEmitterStatic
      * @param string $eventName
      * @param        $callback
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      */
     private function _removeListener(string $eventName, $callback) :self {
         if (!($this->listeners[$eventName] ?? false)) {
@@ -226,7 +226,7 @@ class EventEmitter extends EventEmitterStatic
     /**
      * @param int $listenersCount
      *
-     * @return \xobotyi\emittr\EventEmitter
+     * @return \xobotyi\emittr\EventEmitterOld
      */
     private function _setMaxListeners(int $listenersCount) :self {
         if ($listenersCount <= 0) {

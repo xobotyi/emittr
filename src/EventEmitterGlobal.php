@@ -7,216 +7,158 @@
 
 namespace xobotyi\emittr;
 
-
-/**
- * Class EventEmitterGlobal
- *
- * @package xobotyi\emittr
- */
-final class EventEmitterGlobal extends EventEmitterStatic
+final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
 {
     /**
-     * @var array[]
+     * @var \xobotyi\emittr\EventEmitterGlobal;
      */
-    private static $classesListeners = [];
+    private static $instance;
 
-    /**
-     * @param array $classesListeners
-     *
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    public static function loadClassesEventListeners(array $classesListeners) :void {
-        foreach ($classesListeners as $className => &$listeners) {
-            if (!isset(self::$classesListeners[$className])) {
-                self::$classesListeners[$className] = [];
-            }
+    private $listeners;
 
-            foreach ($listeners as $eventName => &$callbacks) {
-                if (self::isValidCallback($callbacks)) {
-                    self::storeCallback(self::$classesListeners[$className], $eventName, $callbacks);
+    private $maxListernersCount = 10;
 
-                    continue;
-                }
-                else if (is_array($callbacks)) {
-                    foreach ($callbacks as &$callback) {
-                        self::storeCallback(self::$classesListeners[$className], $eventName, $callback);
-                    }
-
-                    continue;
-                }
-
-                throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call or array of them");
-            }
-        }
-    }
-
-    /**
-     * @param null|string $className
-     * @param null|string $eventName
-     *
-     * @return array
-     */
-    public static function getListeners(?string $className = null, ?string $eventName = null) :array {
-        return $className ? $eventName ? self::$classesListeners[$className][$eventName] ?? [] : self::$classesListeners[$className] ?? [] : self::$classesListeners;
-    }
-
-    /**
-     * @param $name
-     * @param $arguments
-     *
-     * @return mixed|void
-     */
-    public static function __callStatic($name, $arguments) {
-        throw new \Error('Call to undefined method ' . get_called_class() . '::' . $name . '()');
-    }
-
-    /**
-     * @param string $className
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    public static function on(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className] ?? false)) {
-            self::$classesListeners[$className] = [];
+    public function on(string $className, string $eventName, $callback) :self {
+        if (!isset($this->listeners[$className][$eventName])) {
+            $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, false, false, self::$staticMaxListeners[get_called_class()] ?? 10);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, false, false);
+
+        return $this;
     }
 
-    /**
-     * @param string $className
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    public static function once(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className] ?? false)) {
-            self::$classesListeners[$className] = [];
+    public function once(string $className, string $eventName, $callback) :self {
+        if (!isset($this->listeners[$className][$eventName])) {
+            $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, true, false, self::$staticMaxListeners[get_called_class()] ?? 10);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, true, false);
+
+        return $this;
     }
 
-    /**
-     * @param string $className
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    public static function prependListener(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className] ?? false)) {
-            self::$classesListeners[$className] = [];
+    public function prependListener(string $className, string $eventName, $callback) :self {
+        if (!isset($this->listeners[$className][$eventName])) {
+            $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, false, true, self::$staticMaxListeners[get_called_class()] ?? 10);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, false, true);
+
+        return $this;
     }
 
-    /**
-     * @param string $className
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    public static function prependOnceListener(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className] ?? false)) {
-            self::$classesListeners[$className] = [];
+    public function prependOnceListener(string $className, string $eventName, $callback) :self {
+        if (!isset($this->listeners[$className][$eventName])) {
+            $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback(self::$classesListeners[$className], $eventName, $callback, true, true, self::$staticMaxListeners[get_called_class()] ?? 10);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, true, true);
+
+        return $this;
     }
 
-    /**
-     * @param string $className
-     * @param string $eventName
-     * @param        $callback
-     */
-    public static function removeListener(string $className, string $eventName, $callback) :void {
-        if (!(self::$classesListeners[$className][$eventName] ?? false)) {
-            return;
+    public function off(string $className, string $eventName, $callback) :self {
+        if (empty($this->listeners[$className][$eventName])) {
+            return $this;
         }
 
-        self::$classesListeners[$className][$eventName] = array_filter(self::$classesListeners[$className][$eventName],
-            function ($item) use (&$callback) { return $item[1] !== $callback; });
+        $this->listeners[$className][$eventName] = array_filter($this->listeners[$className][$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; });
 
-        if (empty(self::$classesListeners[$className][$eventName])) {
-            unset(self::$classesListeners[$className][$eventName]);
-            self::$classesListeners[$className] = array_filter(self::$classesListeners[$className], function ($item) { return !empty($item); });
+        if (empty($this->listeners[$className][$eventName])) {
+            unset($this->listeners[$className][$eventName]);
         }
+
+        if (empty($this->listeners[$className])) {
+            unset($this->listeners[$className]);
+        }
+
+        return $this;
     }
 
-    /**
-     * @param string      $className
-     * @param string|null $eventName
-     */
-    public static function removeAllListeners(string $className, ?string $eventName = null) :void {
-        if (!(self::$classesListeners[$className] ?? false)) {
-            return;
+    public function removeAllListers(?string $className = null, ?string $eventName = null) :self {
+        if ($className === null) {
+            $this->listeners = [];
+
+            return $this;
         }
 
-        if ($eventName) {
-            if (!(self::$classesListeners[$className][$eventName] ?? false)) {
-                return;
-            }
-
-            unset(self::$classesListeners[$className][$eventName]);
-            self::$classesListeners[$className] = array_filter(self::$classesListeners[$className], function ($item) { return !empty($item); });
-
-            return;
+        if (empty($this->listeners[$className])) {
+            return $this;
         }
 
-        self::$classesListeners[$className] = [];
-    }
+        if ($eventName === null) {
+            unset($this->listeners[$className]);
 
-    /**
-     * @return int
-     */
-    public static function getMaxListeners() :int {
-        return self::$staticMaxListeners[get_called_class()] ?? 10;
-    }
-
-    /**
-     * @param int $listenersCount
-     */
-    public static function setMaxListeners(int $listenersCount) :void {
-        if ($listenersCount < 0) {
-            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $listenersCount);
+            return $this;
         }
 
-        self::$staticMaxListeners[get_called_class()] = $listenersCount;
+        if (empty($this->listeners[$className][$eventName])) {
+            return $this;
+        }
+
+        unset($this->listeners[$className][$eventName]);
+
+        if (empty($this->listeners[$className])) {
+            unset($this->listeners[$className]);
+        }
+
+        return $this;
     }
 
-    /**
-     * @param \xobotyi\emittr\Event $evt
-     *
-     * @return bool
-     */
-    public static function propagateClassEvent(Event $evt) {
-        if (substr($evt->getSourceClass(), 0, 15) === 'class@anonymous') {
+    public function getListers(?string $className = null, ?string $eventName = null) :array {
+        return $className ? $eventName ? $this->listeners[$className][$eventName] : $this->listeners[$className] : $this->listeners;
+    }
+
+    public function getMaxListersCount() :int {
+        return $this->maxListernersCount;
+    }
+
+    public function setMaxListersCount(int $maxListernersCount) :self {
+        if ($maxListernersCount < 0) {
+            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListernersCount);
+        }
+
+        $this->maxListernersCount = $maxListernersCount;
+
+        return $this;
+    }
+
+    public static function getInstance() :self {
+        if (!self::$instance) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    public function propagateEventGlobal(Event $event, array &$eventsListeners) :bool {
+        if (substr($event->getSourceClass(), 0, 15) === 'class@anonymous') {
             return true;
         }
 
-        $listeners = &self::$classesListeners[$evt->getSourceClass()][$evt->getEventName()] ?? false;
+        return self::propagateEvent($event, $this->listeners[$event->getSourceClass()]);
+    }
 
-        if (!$listeners) {
+    public static function propagateEvent(Event $event, array &$eventsListeners) :bool {
+        $eventName = $event->getEventName();
+        $listeners = &$eventsListeners[$eventName] ?? false;
+
+        if (empty($listeners)) {
             return true;
         }
 
-        $res = true;
+        $result = true;
 
         foreach ($listeners as $key => &$listener) {
-            call_user_func($listener[1], $evt);
+            call_user_func($listener[1], $event);
 
             if ($listener[0]) {
                 unset($listeners[$key]);
             }
 
-            if (!$evt->isPropagatable()) {
-                $res = false;
+            if (!$event->isPropagatable()) {
+                $result = false;
                 break;
             }
         }
@@ -225,6 +167,28 @@ final class EventEmitterGlobal extends EventEmitterStatic
             unset($listeners);
         }
 
-        return $res;
+        return $result;
+    }
+
+    public static function isValidCallback($callback) :bool {
+        return is_string($callback) || is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
+    }
+
+    public static function storeCallback(array &$arrayToStore, string $eventName, $callback, int $maxListeners = 10, bool $once = false, bool $prepend = false) :void {
+        if (!self::isValidCallback($callback)) {
+            throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call");
+        }
+
+        if (!empty($arrayToStore[$eventName]) && $maxListeners && count($arrayToStore[$eventName]) >= $maxListeners) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $eventName);
+        }
+
+        if (empty($arrayToStore[$eventName])) {
+            $arrayToStore[$eventName] = [];
+        }
+
+        $prepend
+            ? array_unshift($arrayToStore[$eventName], [$once, $callback])
+            : $arrayToStore[$eventName][] = [$once, $callback];
     }
 }

@@ -26,7 +26,7 @@ namespace xobotyi\emittr;
  *
  * @package xobotyi\emittr
  */
-class EventEmitterStatic
+class EventEmitterStaticOld
 {
     public const EVENT_LISTENER_ADDED   = 'listenerAdded';
     public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
@@ -64,7 +64,7 @@ class EventEmitterStatic
 
         $event = new Event($eventName, $payload, $calledClass);
         if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
-            EventEmitterGlobal::propagateClassEvent($event);
+            EventEmitterGlobalOld::propagateClassEvent($event);
         }
     }
 

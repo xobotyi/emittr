@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class EventEmitterStaticTest extends TestCase
 {
     public function testEventEmitterStaticAddRemove() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -20,7 +20,7 @@ class EventEmitterStaticTest extends TestCase
 
         $onListenerAdded   = function (Event $e) use (&$eventName) {
             $eventName = $e->getEventName();
-            $this->assertEquals(EventEmitterStatic::EVENT_LISTENER_REMOVED, $e->getPayload()['eventName']);
+            $this->assertEquals(EventEmitterStaticOld::EVENT_LISTENER_REMOVED, $e->getPayload()['eventName']);
         };
         $onListenerRemoved = function (Event $e) use (&$eventName) { $eventName = ''; };
 
@@ -59,7 +59,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterEventPropagationStop() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -89,7 +89,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterException() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -98,7 +98,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterExceptionOn() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -113,7 +113,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterExceptionOnce() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -128,7 +128,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterExceptionPrependListener() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -143,7 +143,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterExceptionPrependOnceListener() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 
@@ -158,7 +158,7 @@ class EventEmitterStaticTest extends TestCase
     }
 
     public function testEventEmitterExceptionNegativeMaxListeners() {
-        $ee = new class extends EventEmitterStatic
+        $ee = new class extends EventEmitterStaticOld
         {
         };
 

@@ -9,24 +9,11 @@ include_once __DIR__ . '/../vendor/autoload.php';
 
 use xobotyi\emittr;
 
-class AwesomeClass extends emittr\EventEmitter
-{
-}
+$globalEmitter = emittr\EventEmitterGlobal::getInstance();
+$cb1           = function () { };
+$cb2           = function (emittr\Event $event) { };
 
-AwesomeClass::on('testEvent', function (emittr\Event $e) { echo $e->getPayload()['message'] . PHP_EOL; });
+$globalEmitter->on('test', 'testEvt', $cb1)
+              ->off('test', 'testEvt', $cb1);
 
-$awesomeObject = new AwesomeClass();
-$awesomeObject->on('testEvent', function () { echo "Hello world!" . PHP_EOL; });
-
-$awesomeObject->emit('testEvent', ['message' => "eittr is awesome!"]);
-
-emittr\EventEmitterGlobal::on("MostAwesomeClass", "testEvent", 'awesomeCallback');
-
-function awesomeCallback() { echo "eittr is awesome for sure!" . PHP_EOL; }
-
-class MostAwesomeClass extends emittr\EventEmitterStatic
-{
-}
-
-MostAwesomeClass::on('testEvent', function () { echo PHP_EOL . "Hello world!" . PHP_EOL; });
-MostAwesomeClass::emit('testEvent');
+var_dump($globalEmitter->getListers());

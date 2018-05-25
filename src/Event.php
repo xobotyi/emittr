@@ -34,19 +34,19 @@ class Event
      */
     private $sourceClass;
     /**
-     * @var \xobotyi\emittr\EventEmitter
+     * @var \xobotyi\emittr\EventEmitterOld
      */
     private $sourceObject;
 
     /**
      * Event constructor.
      *
-     * @param string                            $evtName
-     * @param mixed                             $payload
-     * @param string|null                       $sourceClass
-     * @param null|\xobotyi\emittr\EventEmitter $sourceObject
+     * @param string                               $evtName
+     * @param mixed                                $payload
+     * @param string|null                          $sourceClass
+     * @param null|\xobotyi\emittr\EventEmitterOld $sourceObject
      */
-    public function __construct(string $evtName, $payload = null, string $sourceClass = null, ?EventEmitter $sourceObject = null) {
+    public function __construct(string $evtName, $payload = null, string $sourceClass = null, ?EventEmitterOld $sourceObject = null) {
         $this->eventName    = $evtName;
         $this->payload      = $payload;
         $this->sourceClass  = $sourceClass;
@@ -93,7 +93,7 @@ class Event
     }
 
     /**
-     * @return null|\xobotyi\emittr\EventEmitter
+     * @return null|\xobotyi\emittr\EventEmitterOld
      */
     public function getSourceObject() {
         return $this->sourceObject;
