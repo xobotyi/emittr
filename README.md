@@ -28,13 +28,13 @@
 
 ## About
 emittr is a small dependency free 7.1+ library that gives you events functionality. It wont bring asyncronious execution, but will let you the best way to separate your code.    
-The main feature of emittr is global emitter with which you wull be able to assign event callbacks even if class weren't autoloaded yet.  
+The main feature of emittr is global emitter with which you will be able to assign event callbacks even if class weren't autoloaded yet.  
 Library uses PSR-4 autoloader standard and always has 100% tests coverage.
 
 ## Why emittr
 1. It is well documented
 2. I'm eating my own sweet pie=)
-3. Assign event callbacks even if class wasnt autoloaded yet
+3. Assign event callbacks even if class wasn't yet autoloaded or even declared
 4. Ability to stop the event propagation
 5. Static and non-static variations of event emitter
 
