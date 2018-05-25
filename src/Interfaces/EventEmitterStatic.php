@@ -22,11 +22,11 @@ interface EventEmitterStatic
 
     public static function removeAllListers(?string $eventName = null);
 
-    public static function getListers(?string $eventName = null);
+    public static function getListers(?string $eventName = null) :array;
 
-    public static function getMaxListers() :int;
+    public static function getMaxListersCount() :int;
 
-    public static function setMaxListers(int $maxListernersCount);
+    public static function setMaxListersCount(int $maxListernersCount);
 
     public static function getGlobalEmitter() :EventEmitterGlobal;
 
