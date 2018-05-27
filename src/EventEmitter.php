@@ -29,6 +29,12 @@ class EventEmitter implements Interfaces\EventEmitter
     }
 
     public function emit(string $eventName, $payload = null) :self {
+        $event = new Event($eventName, $payload, get_called_class(), $this);
+
+        if (empty($this->eventListeners) || $this->eventEmitterGlobal::propagateEvent($event, $this->eventListeners)) {
+            $this->eventEmitterGlobal->propagateEventGlobal($event);
+        }
+
         return $this;
     }
 

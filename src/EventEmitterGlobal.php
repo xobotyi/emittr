@@ -189,7 +189,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
         return $this;
     }
 
-    public function propagateEventGlobal(Event $event, array &$eventsListeners) :bool {
+    public function propagateEventGlobal(Event $event) :bool {
         if (substr($event->getSourceClass(), 0, 15) === 'class@anonymous') {
             return true;
         }
