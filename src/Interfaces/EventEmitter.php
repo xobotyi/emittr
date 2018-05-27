@@ -12,7 +12,7 @@ interface EventEmitter
 {
     public function __construct(?EventEmitterGlobal $emitterGlobal = null);
 
-    public function emit(string $eventName, $payload);
+    public function emit(string $eventName, $payload = null);
 
     public function on(string $eventName, $callback);
 

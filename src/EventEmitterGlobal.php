@@ -16,14 +16,14 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
 
     private $listeners;
 
-    private $maxListernersCount = 10;
+    private $maxListenersCount = 10;
 
     public function on(string $className, string $eventName, $callback) :self {
         if (!isset($this->listeners[$className][$eventName])) {
             $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, false, false);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListenersCount, false, false);
 
         return $this;
     }
@@ -33,7 +33,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
             $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, true, false);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListenersCount, true, false);
 
         return $this;
     }
@@ -43,7 +43,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
             $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, false, true);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListenersCount, false, true);
 
         return $this;
     }
@@ -53,7 +53,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
             $this->listeners[$className][$eventName] = [];
         }
 
-        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListernersCount, true, true);
+        self::storeCallback($this->listeners[$className], $eventName, $callback, $this->maxListenersCount, true, true);
 
         return $this;
     }
@@ -111,7 +111,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
     }
 
     public function getMaxListenersCount() :int {
-        return $this->maxListernersCount;
+        return $this->maxListenersCount;
     }
 
     public function setMaxListenersCount(int $maxListenersCount) :self {
@@ -119,7 +119,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
             throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListenersCount);
         }
 
-        $this->maxListernersCount = $maxListenersCount;
+        $this->maxListenersCount = $maxListenersCount;
 
         return $this;
     }

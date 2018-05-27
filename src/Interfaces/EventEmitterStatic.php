@@ -10,6 +10,8 @@ namespace xobotyi\emittr\Interfaces;
 
 interface EventEmitterStatic
 {
+    public static function emit(string $eventName, $payload = null);
+
     public static function on(string $eventName, $callback);
 
     public static function once(string $eventName, $callback);

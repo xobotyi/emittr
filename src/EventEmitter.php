@@ -12,38 +12,75 @@ use xobotyi\emittr\Interfaces\EventEmitterGlobal;
 
 class EventEmitter implements Interfaces\EventEmitter
 {
+    /**
+     * @var Interfaces\EventEmitterGlobal;
+     */
     private $eventEmitterGlobal;
 
     private $eventListeners = [];
 
-    private $maxListernersCount = 10;
+    private $maxListenersCount = 10;
 
     public function __construct(?Interfaces\EventEmitterGlobal $emitterGlobal = null) {
-        if ($emitterGlobal) {
-            $this->setGlobalEmitter($emitterGlobal);
+        $this->setGlobalEmitter($emitterGlobal ?: EventEmitterGlobal::getInstance());
+    }
+
+    public function emit(string $eventName, $payload = null) :self {
+        return $this;
+    }
+
+    public function on(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, false, false);
+
+        return $this;
+    }
+
+    public function once(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, true, false);
+
+        return $this;
+    }
+
+    public function prependListener(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, false, true);
+
+        return $this;
+    }
+
+    public function prependOnceListener(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, true, true);
+
+        return $this;
+    }
+
+    public function off(string $eventName, $callback) :self {
+        if (empty($this->eventListeners[$eventName])) {
+            return $this;
         }
+
+        $this->eventListeners[$eventName] = array_filter($this->eventListeners[$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; });
+
+        if (empty($this->eventListeners[$eventName])) {
+            unset($this->eventListeners[$eventName]);
+        }
+
+        return $this;
     }
 
-    public function emit(string $eventName, $payload) {
-    }
+    public function removeAllListeners(?string $eventName = null) :self {
+        if ($eventName === null) {
+            $this->eventListeners = [];
 
-    public function on(string $eventName, $callback) {
-    }
+            return $this;
+        }
 
-    public function once(string $eventName, $callback) {
-    }
+        if (empty($this->eventListeners[$eventName])) {
+            return $this;
+        }
 
-    public function prependListener(string $eventName, $callback) {
-    }
+        unset($this->eventListeners[$eventName]);
 
-    public function prependOnceListener(string $eventName, $callback) {
-    }
-
-    public function off(string $eventName, $callback) {
-
-    }
-
-    public function removeAllListeners(?string $eventName = null) {
+        return $this;
     }
 
     public function getListeners(?string $eventName = null) :array {
@@ -51,7 +88,7 @@ class EventEmitter implements Interfaces\EventEmitter
     }
 
     public function getMaxListenersCount() :int {
-        return $this->maxListernersCount;
+        return $this->maxListenersCount;
     }
 
     public function setMaxListenersCount(int $maxListenersCount) :self {
@@ -59,7 +96,7 @@ class EventEmitter implements Interfaces\EventEmitter
             throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListenersCount);
         }
 
-        $this->maxListernersCount = $maxListenersCount;
+        $this->maxListenersCount = $maxListenersCount;
 
         return $this;
     }
