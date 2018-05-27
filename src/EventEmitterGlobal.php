@@ -76,7 +76,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
         return $this;
     }
 
-    public function removeAllListers(?string $className = null, ?string $eventName = null) :self {
+    public function removeAllListeners(?string $className = null, ?string $eventName = null) :self {
         if ($className === null) {
             $this->listeners = [];
 
@@ -106,20 +106,20 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
         return $this;
     }
 
-    public function getListers(?string $className = null, ?string $eventName = null) :array {
+    public function getListeners(?string $className = null, ?string $eventName = null) :array {
         return $className ? $eventName ? $this->listeners[$className][$eventName] : $this->listeners[$className] : $this->listeners;
     }
 
-    public function getMaxListersCount() :int {
+    public function getMaxListenersCount() :int {
         return $this->maxListernersCount;
     }
 
-    public function setMaxListersCount(int $maxListernersCount) :self {
-        if ($maxListernersCount < 0) {
-            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListernersCount);
+    public function setMaxListenersCount(int $maxListenersCount) :self {
+        if ($maxListenersCount < 0) {
+            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListenersCount);
         }
 
-        $this->maxListernersCount = $maxListernersCount;
+        $this->maxListernersCount = $maxListenersCount;
 
         return $this;
     }

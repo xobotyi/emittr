@@ -24,13 +24,13 @@ interface EventEmitter
 
     public function off(string $eventName, $callback);
 
-    public function removeAllListers(?string $eventName = null);
+    public function removeAllListeners(?string $eventName = null);
 
-    public function getListers(?string $eventName = null) :array;
+    public function getListeners(?string $eventName = null) :array;
 
-    public function getMaxListersCount() :int;
+    public function getMaxListenersCount() :int;
 
-    public function setMaxListersCount(int $maxListernersCount);
+    public function setMaxListenersCount(int $maxListenersCount);
 
     public function getGlobalEmitter() :EventEmitterGlobal;
 

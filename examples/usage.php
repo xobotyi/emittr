@@ -16,4 +16,4 @@ $cb2           = function (emittr\Event $event) { };
 $globalEmitter->on('test', 'testEvt', $cb1)
               ->off('test', 'testEvt', $cb1);
 
-var_dump($globalEmitter->getListers());
+var_dump($globalEmitter->getListeners());

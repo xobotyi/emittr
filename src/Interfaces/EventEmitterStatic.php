@@ -20,13 +20,13 @@ interface EventEmitterStatic
 
     public static function prependOnceListener(string $eventName, $callback);
 
-    public static function removeAllListers(?string $eventName = null);
+    public static function removeAllListeners(?string $eventName = null);
 
-    public static function getListers(?string $eventName = null) :array;
+    public static function getListeners(?string $eventName = null) :array;
 
-    public static function getMaxListersCount() :int;
+    public static function getMaxListenersCount() :int;
 
-    public static function setMaxListersCount(int $maxListernersCount);
+    public static function setMaxListenersCount(int $maxListenersCount);
 
     public static function getGlobalEmitter() :EventEmitterGlobal;
 

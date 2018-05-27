@@ -43,23 +43,23 @@ class EventEmitter implements Interfaces\EventEmitter
 
     }
 
-    public function removeAllListers(?string $eventName = null) {
+    public function removeAllListeners(?string $eventName = null) {
     }
 
-    public function getListers(?string $eventName = null) :array {
+    public function getListeners(?string $eventName = null) :array {
         return $eventName ? $this->eventListeners[$eventName] : $this->eventListeners;
     }
 
-    public function getMaxListersCount() :int {
+    public function getMaxListenersCount() :int {
         return $this->maxListernersCount;
     }
 
-    public function setMaxListersCount(int $maxListernersCount) :self {
-        if ($maxListernersCount < 0) {
-            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListernersCount);
+    public function setMaxListenersCount(int $maxListenersCount) :self {
+        if ($maxListenersCount < 0) {
+            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListenersCount);
         }
 
-        $this->maxListernersCount = $maxListernersCount;
+        $this->maxListernersCount = $maxListenersCount;
 
         return $this;
     }
