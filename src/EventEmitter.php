@@ -12,6 +12,9 @@ use xobotyi\emittr\Interfaces\EventEmitterGlobal;
 
 class EventEmitter implements Interfaces\EventEmitter
 {
+    public const EVENT_LISTENER_ADDED   = 'listenerAdded';
+    public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
+
     /**
      * @var Interfaces\EventEmitterGlobal;
      */

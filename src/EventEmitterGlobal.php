@@ -18,6 +18,71 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
 
     private $maxListenersCount = 10;
 
+    public static function getInstance() :self {
+        if (!self::$instance) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    public static function propagateEvent(Event $event, array &$eventsListeners) :bool {
+        $eventName = $event->getEventName();
+        $listeners = &$eventsListeners[$eventName] ?? false;
+
+        if (empty($listeners)) {
+            return true;
+        }
+
+        $result = true;
+
+        foreach ($listeners as $key => &$listener) {
+            if (in_array($eventName, [EventEmitter::EVENT_LISTENER_ADDED, EventEmitter::EVENT_LISTENER_REMOVED,]) &&
+                $event->getPayload()['callback'] && $event->getPayload()['callback'] === $listener[1]) {
+                continue;
+            }
+
+            call_user_func($listener[1], $event);
+
+            if ($listener[0]) {
+                unset($listeners[$key]);
+            }
+
+            if (!$event->isPropagatable()) {
+                $result = false;
+                break;
+            }
+        }
+
+        if (empty($listeners)) {
+            unset($listeners);
+        }
+
+        return $result;
+    }
+
+    public static function isValidCallback($callback) :bool {
+        return is_string($callback) || is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
+    }
+
+    public static function storeCallback(array &$arrayToStore, string $eventName, $callback, int $maxListeners = 10, bool $once = false, bool $prepend = false) :void {
+        if (!self::isValidCallback($callback)) {
+            throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call");
+        }
+
+        if (!empty($arrayToStore[$eventName]) && $maxListeners && count($arrayToStore[$eventName]) >= $maxListeners) {
+            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $eventName);
+        }
+
+        if (empty($arrayToStore[$eventName])) {
+            $arrayToStore[$eventName] = [];
+        }
+
+        $prepend
+            ? array_unshift($arrayToStore[$eventName], [$once, $callback])
+            : $arrayToStore[$eventName][] = [$once, $callback];
+    }
+
     public function on(string $className, string $eventName, $callback) :self {
         if (!isset($this->listeners[$className][$eventName])) {
             $this->listeners[$className][$eventName] = [];
@@ -124,71 +189,11 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
         return $this;
     }
 
-    public static function getInstance() :self {
-        if (!self::$instance) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
-
     public function propagateEventGlobal(Event $event, array &$eventsListeners) :bool {
         if (substr($event->getSourceClass(), 0, 15) === 'class@anonymous') {
             return true;
         }
 
         return self::propagateEvent($event, $this->listeners[$event->getSourceClass()]);
-    }
-
-    public static function propagateEvent(Event $event, array &$eventsListeners) :bool {
-        $eventName = $event->getEventName();
-        $listeners = &$eventsListeners[$eventName] ?? false;
-
-        if (empty($listeners)) {
-            return true;
-        }
-
-        $result = true;
-
-        foreach ($listeners as $key => &$listener) {
-            call_user_func($listener[1], $event);
-
-            if ($listener[0]) {
-                unset($listeners[$key]);
-            }
-
-            if (!$event->isPropagatable()) {
-                $result = false;
-                break;
-            }
-        }
-
-        if (empty($listeners)) {
-            unset($listeners);
-        }
-
-        return $result;
-    }
-
-    public static function isValidCallback($callback) :bool {
-        return is_string($callback) || is_callable($callback) || (is_array($callback) && count($callback) === 2 && is_string($callback[0]) && is_string($callback[1]));
-    }
-
-    public static function storeCallback(array &$arrayToStore, string $eventName, $callback, int $maxListeners = 10, bool $once = false, bool $prepend = false) :void {
-        if (!self::isValidCallback($callback)) {
-            throw new Exception\EventEmitter("Event callback has to be a callable or an array of two elements representing classname and method to call");
-        }
-
-        if (!empty($arrayToStore[$eventName]) && $maxListeners && count($arrayToStore[$eventName]) >= $maxListeners) {
-            throw new Exception\EventEmitter("Maximum amount of listeners reached for event " . $eventName);
-        }
-
-        if (empty($arrayToStore[$eventName])) {
-            $arrayToStore[$eventName] = [];
-        }
-
-        $prepend
-            ? array_unshift($arrayToStore[$eventName], [$once, $callback])
-            : $arrayToStore[$eventName][] = [$once, $callback];
     }
 }
