@@ -31,6 +31,8 @@ interface EventEmitterGlobal
 
     public function removeAllListeners(string $className, ?string $eventName = null);
 
+    public function getEventNames(string $className) :array;
+
     public function getListeners(?string $className = null, ?string $eventName = null) :array;
 
     public function getMaxListenersCount() :int;

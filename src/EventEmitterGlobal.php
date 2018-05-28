@@ -128,7 +128,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
             return $this;
         }
 
-        $this->listeners[$className][$eventName] = array_filter($this->listeners[$className][$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; });
+        $this->listeners[$className][$eventName] = \array_values(\array_filter($this->listeners[$className][$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; }));
 
         if (empty($this->listeners[$className][$eventName])) {
             unset($this->listeners[$className][$eventName]);
@@ -171,8 +171,12 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
         return $this;
     }
 
+    public function getEventNames(string $className) :array {
+        return empty($this->listeners[$className]) ? [] : \array_keys($this->listeners[$className]);
+    }
+
     public function getListeners(?string $className = null, ?string $eventName = null) :array {
-        return $className ? $eventName ? $this->listeners[$className][$eventName] : $this->listeners[$className] : $this->listeners;
+        return $className ? $eventName ? $this->listeners[$className][$eventName] ?? [] : $this->listeners[$className] ?? [] : $this->listeners;
     }
 
     public function getMaxListenersCount() :int {
@@ -191,6 +195,10 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
 
     public function propagateEventGlobal(Event $event) :bool {
         if (substr($event->getSourceClass(), 0, 15) === 'class@anonymous') {
+            return true;
+        }
+
+        if (empty($this->listeners[$event->getSourceClass()])) {
             return true;
         }
 

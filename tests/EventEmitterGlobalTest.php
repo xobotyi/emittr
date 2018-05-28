@@ -10,145 +10,160 @@ namespace xobotyi\emittr;
 
 use PHPUnit\Framework\TestCase;
 
-class EmitterTest extends EventEmitterOld
+class EmitterTest extends EventEmitter
 {
 }
 
 class EventEmitterGlobalTest extends TestCase
 {
     public function testEventEmitterGlobal() {
-        $ee = new EmitterTest();
+        $globalEmitter = new EventEmitterGlobal();
 
-        $callback1 = function () { };
-        $callback2 = function (Event $e) { $e->stopPropagation(); };
+        $globalEmitter->setMaxListenersCount(5);
+        $this->assertEquals(5, $globalEmitter->getMaxListenersCount());
+        $globalEmitter->setMaxListenersCount(0);
 
-        EventEmitterGlobalOld::loadClassesEventListeners([
-                                                          EmitterTest::class => [
-                                                              'test0'  => $callback1,
-                                                              'fooBar' => ['Bar', 'baz'],
-                                                              'boo'    => [
-                                                                  $callback2,
-                                                                  ['Bar', 'baz'],
-                                                              ],
-                                                          ],
-                                                      ]);
+        $cb1 = function () { };
+        $cb2 = function (Event $e) { };
+        $cb3 = ['className', 'methodName'];
 
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'test0'  => [[false, $callback1]],
-                                    'fooBar' => [[false, ['Bar', 'baz']]],
-                                    'boo'    => [[false, $callback2], [false, ['Bar', 'baz']]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
+        $globalEmitter->once(EmitterTest::class, 'test0', $cb1);
+        $globalEmitter->on(EmitterTest::class, 'test1', $cb2);
 
-        EventEmitterGlobalOld::setMaxListeners(0);
-        $this->assertEquals(0, EventEmitterGlobalOld::getMaxListeners());
+        $this->assertEquals(['test0', 'test1'], $globalEmitter->getEventNames(EmitterTest::class));
+    }
 
-        EventEmitterGlobalOld::removeListener(EmitterTest::class, 'boo', ['Bar', 'baz']);
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'test0'  => [[false, $callback1]],
-                                    'fooBar' => [[false, ['Bar', 'baz']]],
-                                    'boo'    => [[false, $callback2]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
-        EventEmitterGlobalOld::removeListener(EmitterTest::class, 'boo', ['Bar', 'baz']);
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'test0'  => [[false, $callback1]],
-                                    'fooBar' => [[false, ['Bar', 'baz']]],
-                                    'boo'    => [[false, $callback2]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
+    public function testEventEmitterGlobalOff() {
+        $globalEmitter = new EventEmitterGlobal();
 
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class, 'test0');
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'fooBar' => [[false, ['Bar', 'baz']]],
-                                    'boo'    => [[false, $callback2]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
+        $cb1 = function () { };
+        $cb2 = function (Event $e) { };
+        $cb3 = ['className', 'methodName'];
 
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class, 'test0');
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'fooBar' => [[false, ['Bar', 'baz']]],
-                                    'boo'    => [[false, $callback2]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
+        $globalEmitter->once(EmitterTest::class, 'test0', $cb3);
+        $globalEmitter->on(EmitterTest::class, 'test0', $cb2);
+        $globalEmitter->on(EmitterTest::class, 'test0', $cb1);
+        $globalEmitter->once(EmitterTest::class, 'test0', $cb1);
+        $globalEmitter->on(EmitterTest::class, 'test1', $cb2);
+        $globalEmitter->on(EmitterTest::class, 'test1', $cb3);
 
-        EventEmitterGlobalOld::removeListener(EmitterTest::class, 'boo', $callback2);
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'fooBar' => [[false, ['Bar', 'baz']]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
-        EventEmitterGlobalOld::removeListener(EmitterTest::class, 'boo', $callback2);
+        $globalEmitter->off(EmitterTest::class, 'test0', $cb1);
+        $this->assertEquals([[true, $cb3], [false, $cb2],],
+                            $globalEmitter->getListeners(EmitterTest::class, 'test0'));
 
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class);
-        $this->assertEquals([
-                                EmitterTest::class => [],
-                            ], EventEmitterGlobalOld::getListeners());
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class);
+        $globalEmitter->off(EmitterTest::class, 'test0', $cb3);
+        $this->assertEquals([[false, $cb2],], $globalEmitter->getListeners(EmitterTest::class, 'test0'));
 
-        EventEmitterGlobalOld::on(EmitterTest::class, 'test', $callback1);
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class, 'test');
-        EventEmitterGlobalOld::once(EmitterTest::class, 'test', $callback1);
-        EventEmitterGlobalOld::prependListener(EmitterTest::class, 'test', $callback2);
-        EventEmitterGlobalOld::prependOnceListener(EmitterTest::class, 'test', $callback2);
-        $this->assertEquals([
-                                EmitterTest::class => [
-                                    'test' => [[true, $callback2], [false, $callback2], [true, $callback1]],
-                                ],
-                            ], EventEmitterGlobalOld::getListeners());
+        $globalEmitter->off(EmitterTest::class, 'test0', $cb2);
+        $this->assertEquals([], $globalEmitter->getListeners(EmitterTest::class, 'test0'));
 
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class, 'test');
-        EventEmitterGlobalOld::prependListener(EmitterTest::class, 'test', $callback2);
-        EventEmitterGlobalOld::removeAllListeners(EmitterTest::class, 'test');
-        EventEmitterGlobalOld::prependOnceListener(EmitterTest::class, 'test', $callback2);
+        $globalEmitter->off(EmitterTest::class, 'test0', $cb2);
+        $this->assertEquals([], $globalEmitter->getListeners(EmitterTest::class, 'test0'));
 
-        $ee->emit('test');
-        EventEmitterGlobalOld::prependOnceListener(EmitterTest::class, 'test', $callback2);
+        $globalEmitter->off(EmitterTest::class, 'test1', $cb2);
+        $globalEmitter->off(EmitterTest::class, 'test1', $cb3);
+        $this->assertEquals([], $globalEmitter->getListeners(EmitterTest::class));
+    }
 
-        $ee = new class extends EventEmitterOld
+    public function testEventEmitterGlobalPrependEvents() {
+        $globalEmitter = new EventEmitterGlobal();
+
+        $cb1 = function () { };
+        $cb2 = function (Event $e) { };
+        $cb3 = ['className', 'methodName'];
+
+        $globalEmitter->prependListener(EmitterTest::class, 'test0', $cb3);
+        $globalEmitter->prependOnceListener(EmitterTest::class, 'test0', $cb2);
+        $globalEmitter->prependListener(EmitterTest::class, 'test0', $cb1);
+
+        $this->assertEquals([[false, $cb1], [true, $cb2], [false, $cb3]],
+                            $globalEmitter->getListeners(EmitterTest::class, 'test0'));
+
+        $globalEmitter->removeAllListeners();
+        $globalEmitter->prependOnceListener(EmitterTest::class, 'test0', $cb2);
+        $globalEmitter->prependListener(EmitterTest::class, 'test0', $cb3);
+
+        $this->assertEquals([[false, $cb3], [true, $cb2]],
+                            $globalEmitter->getListeners(EmitterTest::class, 'test0'));
+    }
+
+    public function testEventEmitterGlobalRemoveAllListeners() {
+        $globalEmitter = new EventEmitterGlobal();
+
+        $cb1 = function () { };
+        $cb2 = function (Event $e) { };
+        $cb3 = ['className', 'methodName'];
+
+        $globalEmitter->on(EmitterTest::class, 'test1', $cb1);
+        $globalEmitter->on(EmitterTest::class, 'test2', $cb2);
+
+        $globalEmitter->removeAllListeners(EmitterTest::class, 'test1');
+        $this->assertEquals(['test2' => [[false, $cb2]]],
+                            $globalEmitter->getListeners(EmitterTest::class));
+
+        $globalEmitter->removeAllListeners(EmitterTest::class, 'test1');
+        $this->assertEquals(['test2' => [[false, $cb2]]],
+                            $globalEmitter->getListeners(EmitterTest::class));
+
+        $globalEmitter->removeAllListeners(EmitterTest::class, 'test2');
+        $this->assertEquals([],
+                            $globalEmitter->getListeners(EmitterTest::class));
+
+        $globalEmitter->on(EmitterTest::class, 'test1', $cb1);
+        $globalEmitter->on(EmitterTest::class, 'test2', $cb2);
+
+        $globalEmitter->removeAllListeners(EmitterTest::class);
+        $this->assertEquals([],
+                            $globalEmitter->getListeners(EmitterTest::class));
+        $globalEmitter->removeAllListeners(EmitterTest::class);
+    }
+
+    public function testEventEmitterGlobalEventEmission() {
+        $globalEmitter = new EventEmitterGlobal();
+        $ee            = new EmitterTest($globalEmitter);
+        $res           = '';
+
+        $ee->once('testEvent', function (Event $e) { $e->getPayload()['res'] .= '1'; });
+        $globalEmitter->once(EmitterTest::class, 'testEvent', function (Event $e) { $e->getPayload()['res'] .= '2'; });
+
+        $ee->emit('testEvent', ['res' => &$res]);
+        $this->assertEquals('12', $res);
+
+        $res = '';
+        $ee->emit('testEvent', ['res' => &$res]);
+        $this->assertEquals('', $res);
+
+        $res = '';
+        $ee->once('testEvent', function (Event $e) {
+            $e->getPayload()['res'] .= '1';
+            $e->stopPropagation();
+        });
+        $globalEmitter->once(EmitterTest::class, 'testEvent', function (Event $e) { $e->getPayload()['res'] .= '2'; });
+        $ee->emit('testEvent', ['res' => &$res]);
+        $this->assertEquals('1', $res);
+
+        $anonymousEE = new class extends EventEmitter
         {
         };
-        $ee->emit('test');//anonimous classes dews not generate global events;
+        $anonymousEE->emit('test'); // anonymous class wont trigger global event;
     }
 
     public function testEventEmitterGlobalExceptionMaxListeners() {
-        EventEmitterGlobalOld::setMaxListeners(2);
+        $globalEmitter = (new EventEmitterGlobal())->setMaxListenersCount(2);
 
         $this->expectException(Exception\EventEmitter::class);
-        EventEmitterGlobalOld::loadClassesEventListeners([
-                                                          EmitterTest::class => [
-                                                              'test1' => [
-                                                                  function (Event $e) { },
-                                                                  function (Event $e) { },
-                                                                  function (Event $e) { },
-                                                              ],
-                                                          ],
-                                                      ]);
+        $globalEmitter->on(EmitterTest::class, 'test1', function (Event $e) { });
+        $globalEmitter->on(EmitterTest::class, 'test1', function (Event $e) { });
+        $globalEmitter->on(EmitterTest::class, 'test1', function (Event $e) { });
     }
 
     public function testEventEmitterGlobalExceptionNotCallable() {
         $this->expectException(Exception\EventEmitter::class);
-        EventEmitterGlobalOld::loadClassesEventListeners([
-                                                          EmitterTest::class => [
-                                                              'test2' => [
-                                                                  null,
-                                                              ],
-                                                          ],
-                                                      ]);
+        (new EventEmitterGlobal())->on(EmitterTest::class, 'test2', null);
     }
 
     public function testEventEmitterGlobalExceptionNegativeMaxListeners() {
         $this->expectException(\InvalidArgumentException::class);
-        EventEmitterGlobalOld::setMaxListeners(-1);
-    }
-
-    public function testEventEmitterGlobalExceptionWrongMethod() {
-        $this->expectException(\Error::class);
-        EventEmitterGlobalOld::fooBar();
+        (new EventEmitterGlobal())->setMaxListenersCount(-1);
     }
 }

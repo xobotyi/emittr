@@ -7,9 +7,6 @@
 
 namespace xobotyi\emittr;
 
-
-use xobotyi\emittr\Interfaces\EventEmitterGlobal;
-
 class EventEmitter implements Interfaces\EventEmitter
 {
     public const EVENT_LISTENER_ADDED   = 'listenerAdded';
@@ -67,7 +64,7 @@ class EventEmitter implements Interfaces\EventEmitter
             return $this;
         }
 
-        $this->eventListeners[$eventName] = array_filter($this->eventListeners[$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; });
+        $this->eventListeners[$eventName] = \array_values(\array_filter($this->eventListeners[$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; }));
 
         if (empty($this->eventListeners[$eventName])) {
             unset($this->eventListeners[$eventName]);
@@ -92,8 +89,12 @@ class EventEmitter implements Interfaces\EventEmitter
         return $this;
     }
 
+    public function getEventNames() :array {
+        return empty($this->eventListeners) ? [] : \array_keys($this->eventListeners);
+    }
+
     public function getListeners(?string $eventName = null) :array {
-        return $eventName ? $this->eventListeners[$eventName] : $this->eventListeners;
+        return $eventName ? $this->eventListeners[$eventName] ?? [] : $this->eventListeners;
     }
 
     public function getMaxListenersCount() :int {
@@ -110,11 +111,11 @@ class EventEmitter implements Interfaces\EventEmitter
         return $this;
     }
 
-    public function getGlobalEmitter() :EventEmitterGlobal {
+    public function getGlobalEmitter() :Interfaces\EventEmitterGlobal {
         return $this->eventEmitterGlobal;
     }
 
-    public function setGlobalEmitter(EventEmitterGlobal $emitterGlobal) :self {
+    public function setGlobalEmitter(Interfaces\EventEmitterGlobal $emitterGlobal) :self {
         $this->eventEmitterGlobal = $emitterGlobal;
 
         return $this;

@@ -26,6 +26,8 @@ interface EventEmitter
 
     public function removeAllListeners(?string $eventName = null);
 
+    public function getEventNames() :array;
+
     public function getListeners(?string $eventName = null) :array;
 
     public function getMaxListenersCount() :int;
