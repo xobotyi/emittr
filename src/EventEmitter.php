@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 /**
  * @Author : a.zinovyev
  * @Package: emittr
@@ -9,231 +7,134 @@ declare(strict_types=1);
 
 namespace xobotyi\emittr;
 
-/**
- * Class EventEmitter
- *
- * @method self      emit(string $eventName, $payload = null)
- * @method array     getEventNames()
- * @method array     getListeners(?string $eventName = null)
- * @method int       getMaxListeners()
- * @method self      on(string $eventName, callable $callback)
- * @method self      once(string $eventName, callable $callback)
- * @method self      prependListener(string $eventName, callable $callback)
- * @method self      prependOnceListener(string $eventName, callable $callback)
- * @method self      removeAllListeners(?string $eventName = null)
- * @method self      removeListener(string $eventName, callable $callback)
- * @method self      setMaxListeners(int $listenersCount)
- *
- * @method static void      emit(string $eventName, $payload = null)
- * @method static array     getEventNames()
- * @method static array     getListeners(?string $eventName = null)
- * @method static int       getMaxListeners()
- * @method static void      on(string $eventName, callable $callback)
- * @method static void      once(string $eventName, callable $callback)
- * @method static void      prependListener(string $eventName, callable $callback)
- * @method static void      prependOnceListener(string $eventName, callable $callback)
- * @method static void      removeAllListeners(?string $eventName = null)
- * @method static void      removeListener(string $eventName, callable $callback)
- * @method static void      setMaxListeners(int $listenersCount)
- *
- * @package xobotyi\emittr
- */
-/**
- * Class EventEmitter
- *
- * @package xobotyi\emittr
- */
-class EventEmitter extends EventEmitterStatic
+class EventEmitter implements Interfaces\EventEmitter
 {
-    /**
-     * @var array[]
-     */
-    private $listeners = [];
-    /**
-     * @var int
-     */
-    private $maxListeners = 10;
+    public const EVENT_LISTENER_ADDED   = 'listenerAdded';
+    public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
 
     /**
-     * @param $name
-     * @param $arguments
-     *
-     * @return mixed
+     * @var Interfaces\EventEmitterGlobal;
      */
-    public function __call($name, $arguments) {
-        if (method_exists($this, '_' . $name)) {
-            return call_user_func_array([$this, '_' . $name], $arguments);
-        }
+    private $eventEmitterGlobal;
 
-        throw new \Error('Call to undefined method ' . get_called_class() . '->' . $name . '()');
+    private $eventListeners = [];
+
+    private $maxListenersCount = 10;
+
+    public function __construct(?Interfaces\EventEmitterGlobal $emitterGlobal = null) {
+        $this->setGlobalEmitter($emitterGlobal ?: EventEmitterGlobal::getInstance());
     }
 
-    /**
-     * @param string $eventName
-     * @param mixed  $payload
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     */
-    private function _emit(string $eventName, $payload = null) :self {
-        $calledClass = get_called_class();
-        $event       = new Event($eventName, $payload, $calledClass, $this);
+    public function emit(string $eventName, $payload = null) :self {
+        $event = new Event($eventName, $payload, get_called_class(), $this);
 
-        if (empty($this->listeners) || self::propagateEvent($event, $this->listeners)) {
-            if (!(self::$staticListeners[$calledClass] ?? false) || self::propagateEvent($event, self::$staticListeners[$calledClass])) {
-                EventEmitterGlobal::propagateClassEvent($event);
-            }
+        if (empty($this->eventListeners) || $this->eventEmitterGlobal::propagateEvent($event, $this->eventListeners)) {
+            $this->eventEmitterGlobal->propagateEventGlobal($event);
         }
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    private function _getEventNames() :array {
-        return \array_keys($this->listeners);
-    }
-
-    /**
-     * @param null|string $eventName
-     *
-     * @return array
-     */
-    private function _getListeners(?string $eventName = null) :array {
-        return $this->listeners[$eventName] ?? [];
-    }
-
-    /**
-     * @return int
-     */
-    private function _getMaxListeners() :int {
-        return $this->maxListeners;
-    }
-
-    /**
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    private function _on(string $eventName, $callback) :self {
-        self::storeCallback($this->listeners, $eventName, $callback, false, false, $this->maxListeners);
+    public function on(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, false, false);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
-    /**
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    private function _once(string $eventName, $callback) :self {
-        self::storeCallback($this->listeners, $eventName, $callback, true, false, $this->maxListeners);
+    public function once(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, true, false);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
-    /**
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    private function _prependListener(string $eventName, $callback) :self {
-        self::storeCallback($this->listeners, $eventName, $callback, false, true, $this->maxListeners);
+    public function prependListener(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, false, true);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
-    /**
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     * @throws \xobotyi\emittr\Exception\EventEmitter
-     */
-    private function _prependOnceListener(string $eventName, $callback) :self {
-        self::storeCallback($this->listeners, $eventName, $callback, true, true, $this->maxListeners);
+    public function prependOnceListener(string $eventName, $callback) :self {
+        $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, true, true);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
-    /**
-     * @param null|string $eventName
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     */
-    private function _removeAllListeners(?string $eventName = null) :self {
-        if (empty($this->listeners)) {
+    public function off(string $eventName, $callback) :self {
+        if (empty($this->eventListeners[$eventName])) {
             return $this;
         }
 
-        if ($eventName) {
-            if (!($this->listeners[$eventName] ?? false)) {
-                return $this;
+        $this->eventListeners[$eventName] = \array_values(\array_filter($this->eventListeners[$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; }));
+        $this->emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback]);
+
+        if (empty($this->eventListeners[$eventName])) {
+            unset($this->eventListeners[$eventName]);
+        }
+
+        return $this;
+    }
+
+    public function removeAllListeners(?string $eventName = null) :self {
+        if ($eventName === null) {
+            foreach ($this->eventListeners as $eventName => $callbacks) {
+                foreach ($callbacks as &$callback) {
+                    $this->emit(self::EVENT_LISTENER_REMOVED, [
+                        'eventName' => $eventName,
+                        'callback'  => &$callback[1],
+                    ]);
+                }
             }
 
-            foreach ($this->listeners[$eventName] as &$callback) {
-                $this->_emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback[1]]);
-            }
-
-            unset($this->listeners[$eventName]);
+            $this->eventListeners = [];
 
             return $this;
         }
 
-        foreach ($this->listeners as $eventName => &$listeners) {
-            if (empty($listeners)) {
-                continue;
-            }
-
-            foreach ($listeners as &$callback) {
-                $this->_emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback[1]]);
-            }
-        }
-
-        $this->listeners = [];
-
-        return $this;
-    }
-
-    /**
-     * @param string $eventName
-     * @param        $callback
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     */
-    private function _removeListener(string $eventName, $callback) :self {
-        if (!($this->listeners[$eventName] ?? false)) {
+        if (empty($this->eventListeners[$eventName])) {
             return $this;
         }
 
-        $this->listeners[$eventName] = array_filter($this->listeners[$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; });
-
-        if (empty($this->listeners[$eventName])) {
-            unset($this->listeners[$eventName]);
+        foreach ($this->eventListeners[$eventName] as $callback) {
+            $this->emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback[1]]);
         }
 
-        $this->_emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback]);
+        unset($this->eventListeners[$eventName]);
 
         return $this;
     }
 
-    /**
-     * @param int $listenersCount
-     *
-     * @return \xobotyi\emittr\EventEmitter
-     */
-    private function _setMaxListeners(int $listenersCount) :self {
-        if ($listenersCount <= 0) {
-            throw new \InvalidArgumentException('Listeners count must be greater than 0, got ' . $listenersCount);
+    public function getEventNames() :array {
+        return empty($this->eventListeners) ? [] : \array_keys($this->eventListeners);
+    }
+
+    public function getListeners(?string $eventName = null) :array {
+        return $eventName ? $this->eventListeners[$eventName] ?? [] : $this->eventListeners;
+    }
+
+    public function getMaxListenersCount() :int {
+        return $this->maxListenersCount;
+    }
+
+    public function setMaxListenersCount(int $maxListenersCount) :self {
+        if ($maxListenersCount < 0) {
+            throw new \InvalidArgumentException('Listeners count must be greater or equal 0, got ' . $maxListenersCount);
         }
 
-        $this->maxListeners = $listenersCount;
+        $this->maxListenersCount = $maxListenersCount;
+
+        return $this;
+    }
+
+    public function getGlobalEmitter() :Interfaces\EventEmitterGlobal {
+        return $this->eventEmitterGlobal;
+    }
+
+    public function setGlobalEmitter(Interfaces\EventEmitterGlobal $emitterGlobal) :self {
+        $this->eventEmitterGlobal = $emitterGlobal;
 
         return $this;
     }
