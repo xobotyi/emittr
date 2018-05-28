@@ -37,24 +37,28 @@ class EventEmitter implements Interfaces\EventEmitter
 
     public function on(string $eventName, $callback) :self {
         $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, false, false);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
     public function once(string $eventName, $callback) :self {
         $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, true, false);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
     public function prependListener(string $eventName, $callback) :self {
         $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, false, true);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
 
     public function prependOnceListener(string $eventName, $callback) :self {
         $this->eventEmitterGlobal::storeCallback($this->eventListeners, $eventName, $callback, $this->maxListenersCount, true, true);
+        $this->emit(self::EVENT_LISTENER_ADDED, ['callback' => &$callback]);
 
         return $this;
     }
@@ -65,6 +69,7 @@ class EventEmitter implements Interfaces\EventEmitter
         }
 
         $this->eventListeners[$eventName] = \array_values(\array_filter($this->eventListeners[$eventName], function ($item) use (&$callback) { return $item[1] !== $callback; }));
+        $this->emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback]);
 
         if (empty($this->eventListeners[$eventName])) {
             unset($this->eventListeners[$eventName]);
@@ -75,6 +80,15 @@ class EventEmitter implements Interfaces\EventEmitter
 
     public function removeAllListeners(?string $eventName = null) :self {
         if ($eventName === null) {
+            foreach ($this->eventListeners as $eventName => $callbacks) {
+                foreach ($callbacks as &$callback) {
+                    $this->emit(self::EVENT_LISTENER_REMOVED, [
+                        'eventName' => $eventName,
+                        'callback'  => &$callback[1],
+                    ]);
+                }
+            }
+
             $this->eventListeners = [];
 
             return $this;
@@ -82,6 +96,10 @@ class EventEmitter implements Interfaces\EventEmitter
 
         if (empty($this->eventListeners[$eventName])) {
             return $this;
+        }
+
+        foreach ($this->eventListeners[$eventName] as $callback) {
+            $this->emit(self::EVENT_LISTENER_REMOVED, ['eventName' => $eventName, 'callback' => &$callback[1]]);
         }
 
         unset($this->eventListeners[$eventName]);

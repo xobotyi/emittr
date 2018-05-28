@@ -22,6 +22,7 @@ class EventEmitterTest extends TestCase
         $callback2 = function (Event $e) { };
 
         $ee->once('test1', $callback1);
+
         $this->assertEquals(['test1'], $ee->getEventNames());
         $this->assertEquals([[true, $callback1]], $ee->getListeners('test1'));
 
@@ -53,7 +54,11 @@ class EventEmitterTest extends TestCase
         $ee->removeAllListeners();
         $this->assertEquals(EventEmitterGlobal::getInstance(), $ee->getGlobalEmitter());
 
-        $ee->emit('test1');
+        $res = ''; // listenerAdded and listenerRemoved event doesnt fire themselves;
+        $ee->on($ee::EVENT_LISTENER_ADDED, function () use (&$res) { $res .= '1'; });
+        $this->assertEquals('', $res);
+        $ee->on($ee::EVENT_LISTENER_ADDED, function () use (&$res) { $res .= '2'; });
+        $this->assertEquals('1', $res);
     }
 
     public function testEventEmitterExceptionNegativeMaxListeners() {

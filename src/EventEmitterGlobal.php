@@ -28,13 +28,13 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
 
     public static function propagateEvent(Event $event, array &$eventsListeners) :bool {
         $eventName = $event->getEventName();
-        $listeners = &$eventsListeners[$eventName] ?? false;
 
-        if (empty($listeners)) {
+        if (empty($eventsListeners[$eventName])) {
             return true;
         }
 
-        $result = true;
+        $listeners = &$eventsListeners[$eventName];
+        $result    = true;
 
         foreach ($listeners as $key => &$listener) {
             if (in_array($eventName, [EventEmitter::EVENT_LISTENER_ADDED, EventEmitter::EVENT_LISTENER_REMOVED,]) &&
