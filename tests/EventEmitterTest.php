@@ -68,6 +68,13 @@ class EventEmitterTest extends TestCase
         $ee->setMaxListenersCount(-1);
     }
 
+    public function testEventEmitterExceptionNonEventEmission() {
+        $ee = new EventEmitter();
+
+        $this->expectException(\TypeError::class);
+        $ee->emit(null);
+    }
+
     public function testEventEmitterExceptionMaxListeners() {
         $ee = new EventEmitter();
         $ee->setMaxListenersCount(2);
