@@ -25,8 +25,19 @@ class EventEmitter implements Interfaces\EventEmitter
         $this->setGlobalEmitter($emitterGlobal ?: EventEmitterGlobal::getInstance());
     }
 
-    public function emit(string $eventName, $payload = null) :self {
-        $event = new Event($eventName, $payload, get_called_class(), $this);
+    /**
+     * @param string|\xobotyi\emittr\Event $event
+     * @param null                         $payload
+     *
+     * @return \xobotyi\emittr\EventEmitter
+     */
+    public function emit($event, $payload = null) :self {
+        if (is_string($event)) {
+            $event = new Event($event, $payload, get_called_class(), $this);
+        }
+        else if (!($event instanceof Event)) {
+            throw new \TypeError('first parameter has to be of type string or \xobotyi\emittr\Event instance, got ' . gettype($event));
+        }
 
         if (empty($this->eventListeners) || $this->eventEmitterGlobal::propagateEvent($event, $this->eventListeners)) {
             $this->eventEmitterGlobal->propagateEventGlobal($event);

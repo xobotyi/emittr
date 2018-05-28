@@ -12,7 +12,13 @@ interface EventEmitter
 {
     public function __construct(?EventEmitterGlobal $emitterGlobal = null);
 
-    public function emit(string $eventName, $payload = null);
+    /**
+     * @param string|\xobotyi\emittr\Event $event
+     * @param null                         $payload
+     *
+     * @return mixed
+     */
+    public function emit($event, $payload = null);
 
     public function on(string $eventName, $callback);
 

@@ -52,12 +52,17 @@ composer require xobotyi/emittr
 use xobotyi\emittr;
 
 class AwesomeClass extends emittr\EventEmitter
-{}
-
-AwesomeClass::on('testEvent', function (emittr\Event $e) { echo $e->getPayload()['message'] . PHP_EOL; });
+{
+}
 
 $awesomeObject = new AwesomeClass();
-$awesomeObject->on('testEvent', function () { echo "Hello world!" . PHP_EOL; });
+
+$awesomeObject
+    ->once('testEvent', function (emittr\Event $e) {
+        echo $e->getPayload()['message'] . PHP_EOL;
+        $e->stopPropagation();
+    })
+    ->once('testEvent', function () { echo "emittr is awful!" . PHP_EOL; });
 
 $awesomeObject->emit('testEvent', ['message' => "eittr is awesome!"]);
 ```
@@ -66,14 +71,21 @@ or you can use global emitter to assign handler
 use xobotyi\emittr;
 
 // note that neiter MostAwesomeClass class nor awesomeCallback function was not defined yet!
-emittr\EventEmitterGlobal::on("MostAwesomeClass", "testEvent", 'awesomeCallback');
+emittr\EventEmitterGlobal::getInstance()
+                         ->once("MostAwesomeClass", 'testEvent', 'awesomeCallback')
+                         ->once("MostAwesomeClass", 'testEvent', 'nonAwesomeCallback');
 
-function awesomeCallback() { echo "eittr is awesome for sure!" . PHP_EOL; }
-
-class MostAwesomeClass extends emittr\EventEmitterStatic
+class MostAwesomeClass
 {
+    use emittr\Traits\EventEmitterStatic;
 }
 
-MostAwesomeClass::on('testEvent', function () { echo PHP_EOL . "Hello world!" . PHP_EOL; });
-MostAwesomeClass::emit('testEvent');
+function awesomeCallback(emittr\Event $e) {
+    echo $e->getPayload()['message'] . PHP_EOL;
+    $e->stopPropagation();
+}
+
+function nonAwesomeCallback() { echo "emittr is awful!" . PHP_EOL; }
+
+MostAwesomeClass::emit('testEvent', ['message' => "eittr is awesome!"]);
 ```

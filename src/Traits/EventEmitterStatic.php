@@ -8,6 +8,7 @@
 namespace xobotyi\emittr\Traits;
 
 
+use xobotyi\emittr\Event;
 use xobotyi\emittr\Interfaces\EventEmitter;
 use xobotyi\emittr\Interfaces\EventEmitterGlobal;
 
@@ -27,7 +28,7 @@ trait EventEmitterStatic
     }
 
     public static function emit(string $eventName, $payload = null) :void {
-        self::getEventEmitter()->emit($eventName, $payload);
+        self::getEventEmitter()->emit(new Event($eventName, $payload, get_called_class(), null));
     }
 
     public static function on(string $eventName, $callback) :void {

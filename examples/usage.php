@@ -9,11 +9,36 @@ include_once __DIR__ . '/../vendor/autoload.php';
 
 use xobotyi\emittr;
 
-$globalEmitter = emittr\EventEmitterGlobal::getInstance();
-$cb1           = function () { };
-$cb2           = function (emittr\Event $event) { };
+class AwesomeClass extends emittr\EventEmitter
+{
+}
 
-$globalEmitter->on('test', 'testEvt', $cb1)
-              ->off('test', 'testEvt', $cb1);
+$awesomeObject = new AwesomeClass();
 
-var_dump($globalEmitter->getListeners());
+$awesomeObject
+    ->once('testEvent', function (emittr\Event $e) {
+        echo $e->getPayload()['message'] . PHP_EOL;
+        $e->stopPropagation();
+    })
+    ->once('testEvent', function () { echo "emittr is awful!" . PHP_EOL; });
+
+$awesomeObject->emit('testEvent', ['message' => "eittr is awesome!"]);
+
+// global event handling
+emittr\EventEmitterGlobal::getInstance()
+                         ->once("MostAwesomeClass", 'testEvent', 'awesomeCallback')
+                         ->once("MostAwesomeClass", 'testEvent', 'nonAwesomeCallback');
+
+class MostAwesomeClass
+{
+    use emittr\Traits\EventEmitterStatic;
+}
+
+function awesomeCallback(emittr\Event $e) {
+    echo $e->getPayload()['message'] . PHP_EOL;
+    $e->stopPropagation();
+}
+
+function nonAwesomeCallback() { echo "emittr is awful!" . PHP_EOL; }
+
+MostAwesomeClass::emit('testEvent', ['message' => "eittr is awesome!"]);
