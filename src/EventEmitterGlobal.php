@@ -83,6 +83,35 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
             : $arrayToStore[$eventName][] = [$once, $callback];
     }
 
+    public function loadListeners(array $listeners) :self {
+        foreach ($listeners as $className => &$classListeners) {
+            foreach ($classListeners as $eventName => $eventListeners) {
+                foreach ($eventListeners as $listener) {
+                    if (!isset($this->listeners[$className][$eventName])) {
+                        $this->listeners[$className][$eventName] = [];
+                    }
+
+                    if (isset($listener['once']) && isset($listener['callback'])) {
+                        self::storeCallback($this->listeners[$className], $eventName, $listener['callback'], $this->maxListenersCount, $listener['once'], false);
+                        continue;
+                    }
+
+                    self::storeCallback($this->listeners[$className], $eventName, $listener, $this->maxListenersCount, false, false);
+                }
+
+                if (empty($this->listeners[$className][$eventName])) {
+                    unset($this->listeners[$className][$eventName]);
+                }
+            }
+
+            if (empty($this->listeners[$className])) {
+                unset($this->listeners[$className]);
+            }
+        }
+
+        return $this;
+    }
+
     public function on(string $className, string $eventName, $callback) :self {
         if (!isset($this->listeners[$className][$eventName])) {
             $this->listeners[$className][$eventName] = [];

@@ -19,6 +19,8 @@ interface EventEmitterGlobal
 
     public static function storeCallback(array &$arrayToStore, string $eventName, $callback, int $maxListeners = 10, bool $once = false, bool $prepend = false) :void;
 
+    public function loadListeners(array $listeners);
+
     public function on(string $className, string $eventName, $callback);
 
     public function once(string $className, string $eventName, $callback);
