@@ -18,7 +18,8 @@ interface EventEmitter
      * Once the event was emitted, it will propagate through all the listeners assigned on the certain EventEmitter,
      * then it will propagate through listeners assigned for that class in GlobalEventEmitter.
      *
-     * Each listener has the ability to stop event propagation.
+     * Each listener has the ability to stop event propagation by the calling method of event object that it receives
+     * as a first parameter
      *
      * @param string|\xobotyi\emittr\Event $event
      * @param mixed                        $payload
@@ -28,7 +29,9 @@ interface EventEmitter
     public function emit($event, $payload = null);
 
     /**
-     * Add the event listener that will fire each time event emitted
+     * Add the event listener that will fire each time event emitted.
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $eventName
      * @param callable|array|string $callback
@@ -38,7 +41,9 @@ interface EventEmitter
     public function on(string $eventName, $callback);
 
     /**
-     * Add the event listener that will fire only once
+     * Add the event listener that will fire only once.
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $eventName
      * @param callable|array|string $callback
@@ -48,7 +53,9 @@ interface EventEmitter
     public function once(string $eventName, $callback);
 
     /**
-     * Prepend the event listener
+     * Prepend the event listener.
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $eventName
      * @param callable|array|string $callback
@@ -58,7 +65,9 @@ interface EventEmitter
     public function prependListener(string $eventName, $callback);
 
     /**
-     * Prepend the event listener that will fire only once
+     * Prepend the event listener that will fire only once.
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $eventName
      * @param callable|array|string $callback

@@ -50,7 +50,22 @@ interface GlobalEventHandler
     public static function storeCallback(array &$arrayToStore, string $eventName, $callback, int $maxListeners = 10, bool $once = false, bool $prepend = false) :void;
 
     /**
-     * Assign listeners from an array
+     * Assign listeners from an array.
+     *
+     * Array must be next structure:
+     * [
+     *   '<className>': [
+     *      '<eventName>': [
+     *        function(){},
+     *        'functionName',
+     *        ['className', 'methodName'],
+     *        [
+     *          'callback' => ['className', 'methodName'],
+     *          'once' => true
+     *        ]
+     *      ]
+     *   ]
+     * ]
      *
      * @param array $listeners
      *
@@ -60,6 +75,8 @@ interface GlobalEventHandler
 
     /**
      * Append the event listen
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $className
      * @param string                $eventName
@@ -71,6 +88,8 @@ interface GlobalEventHandler
 
     /**
      * Append the event listener that will fire only once
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $className
      * @param string                $eventName
@@ -94,6 +113,8 @@ interface GlobalEventHandler
     /**
      * Prepend the event listener
      *
+     * Callback will receive the event object as a first parameter.
+     *
      * @param string                $className
      * @param string                $eventName
      * @param callable|array|string $callback
@@ -104,6 +125,8 @@ interface GlobalEventHandler
 
     /**
      * Prepend the event listener that will fire only once
+     *
+     * Callback will receive the event object as a first parameter.
      *
      * @param string                $className
      * @param string                $eventName
