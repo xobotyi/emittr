@@ -116,7 +116,7 @@ class Event
      *
      * @return string|null
      */
-    public function getSourceClass() {
+    public function getSourceClass() :?string {
         return $this->sourceClass;
     }
 }
