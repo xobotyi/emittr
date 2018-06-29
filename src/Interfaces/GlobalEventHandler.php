@@ -9,7 +9,7 @@ namespace xobotyi\emittr\Interfaces;
 
 use xobotyi\emittr\Event;
 
-interface EventEmitterGlobal
+interface GlobalEventHandler
 {
     /**
      * Return the instance of global emitter

@@ -13,7 +13,7 @@ class EventEmitter implements Interfaces\EventEmitter
     public const EVENT_LISTENER_REMOVED = 'listenerRemoved';
 
     /**
-     * @var Interfaces\EventEmitterGlobal;
+     * @var Interfaces\GlobalEventHandler;
      */
     private $eventEmitterGlobal;
 
@@ -30,10 +30,10 @@ class EventEmitter implements Interfaces\EventEmitter
     /**
      * EventEmitter constructor.
      *
-     * @param null|\xobotyi\emittr\Interfaces\EventEmitterGlobal $emitterGlobal
+     * @param null|\xobotyi\emittr\Interfaces\GlobalEventHandler $emitterGlobal
      */
-    public function __construct(?Interfaces\EventEmitterGlobal $emitterGlobal = null) {
-        $this->setGlobalEmitter($emitterGlobal ?: EventEmitterGlobal::getInstance());
+    public function __construct(?Interfaces\GlobalEventHandler $emitterGlobal = null) {
+        $this->setGlobalEmitter($emitterGlobal ?: GlobalEventHandler::getInstance());
     }
 
     /**
@@ -227,20 +227,20 @@ class EventEmitter implements Interfaces\EventEmitter
     /**
      * @inheritdoc
      *
-     * @return \xobotyi\emittr\Interfaces\EventEmitterGlobal
+     * @return \xobotyi\emittr\Interfaces\GlobalEventHandler
      */
-    public function getGlobalEmitter() :Interfaces\EventEmitterGlobal {
+    public function getGlobalEmitter() :Interfaces\GlobalEventHandler {
         return $this->eventEmitterGlobal;
     }
 
     /**
      * @inheritdoc
      *
-     * @param \xobotyi\emittr\Interfaces\EventEmitterGlobal $emitterGlobal
+     * @param \xobotyi\emittr\Interfaces\GlobalEventHandler $emitterGlobal
      *
      * @return \xobotyi\emittr\EventEmitter
      */
-    public function setGlobalEmitter(Interfaces\EventEmitterGlobal $emitterGlobal) :self {
+    public function setGlobalEmitter(Interfaces\GlobalEventHandler $emitterGlobal) :self {
         $this->eventEmitterGlobal = $emitterGlobal;
 
         return $this;

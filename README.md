@@ -36,7 +36,7 @@ Library uses PSR-4 autoloader standard and always has 100% tests coverage.
 2. I'm eating my own sweet pie=)
 3. Assign event callbacks even if class wasn't yet autoloaded or even declared
 4. Ability to stop the event propagation
-5. Static and non-static variations of event emitter
+5. Static and non-static variations of event emitter  
 
 ## Requirements
 * [PHP](https://php.net/) 7.1+

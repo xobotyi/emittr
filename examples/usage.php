@@ -25,7 +25,7 @@ $awesomeObject
 $awesomeObject->emit('testEvent', ['message' => "eittr is awesome!"]);
 
 // global event handling
-emittr\EventEmitterGlobal::getInstance()
+emittr\GlobalEventHandler::getInstance()
                          ->once("MostAwesomeClass", 'testEvent', 'awesomeCallback')
                          ->once("MostAwesomeClass", 'testEvent', 'nonAwesomeCallback');
 

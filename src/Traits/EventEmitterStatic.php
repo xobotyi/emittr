@@ -10,7 +10,7 @@ namespace xobotyi\emittr\Traits;
 
 use xobotyi\emittr\Event;
 use xobotyi\emittr\Interfaces\EventEmitter;
-use xobotyi\emittr\Interfaces\EventEmitterGlobal;
+use xobotyi\emittr\Interfaces\GlobalEventHandler;
 
 trait EventEmitterStatic
 {
@@ -67,11 +67,11 @@ trait EventEmitterStatic
         self::getEventEmitter()->setMaxListenersCount($maxListenersCount);
     }
 
-    public static function getGlobalEmitter() :EventEmitterGlobal {
+    public static function getGlobalEmitter() :GlobalEventHandler {
         return self::getEventEmitter()->getGlobalEmitter();
     }
 
-    public static function setGlobalEmitter(EventEmitterGlobal $emitterGlobal) :void {
+    public static function setGlobalEmitter(GlobalEventHandler $emitterGlobal) :void {
         self::getEventEmitter()->setGlobalEmitter($emitterGlobal);
     }
 }

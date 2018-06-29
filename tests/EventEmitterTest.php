@@ -52,7 +52,7 @@ class EventEmitterTest extends TestCase
         $this->assertEquals([], $ee->getListeners('test1'));
 
         $ee->removeAllListeners();
-        $this->assertEquals(EventEmitterGlobal::getInstance(), $ee->getGlobalEmitter());
+        $this->assertEquals(GlobalEventHandler::getInstance(), $ee->getGlobalEmitter());
 
         $res = ''; // listenerAdded and listenerRemoved event doesnt fire themselves;
         $ee->on($ee::EVENT_LISTENER_ADDED, function () use (&$res) { $res .= '1'; });

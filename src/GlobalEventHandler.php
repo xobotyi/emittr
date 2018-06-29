@@ -7,10 +7,10 @@
 
 namespace xobotyi\emittr;
 
-final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
+final class GlobalEventHandler implements Interfaces\GlobalEventHandler
 {
     /**
-     * @var \xobotyi\emittr\EventEmitterGlobal;
+     * @var \xobotyi\emittr\GlobalEventHandler;
      */
     private static $instance;
 
@@ -24,7 +24,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
     /**
      * @inheritdoc
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      */
     public static function getInstance() :self {
         if (!self::$instance) {
@@ -123,7 +123,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      *
      * @param array $listeners
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public function loadListeners(array $listeners) :self {
@@ -162,7 +162,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      * @param string                $eventName
      * @param callable|array|string $callback
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public function on(string $className, string $eventName, $callback) :self {
@@ -182,7 +182,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      * @param string                $eventName
      * @param callable|array|string $callback
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public function once(string $className, string $eventName, $callback) :self {
@@ -202,7 +202,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      * @param string                $eventName
      * @param callable|array|string $callback
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public function prependListener(string $className, string $eventName, $callback) :self {
@@ -222,7 +222,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      * @param string                $eventName
      * @param callable|array|string $callback
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      * @throws \xobotyi\emittr\Exception\EventEmitter
      */
     public function prependOnceListener(string $className, string $eventName, $callback) :self {
@@ -242,7 +242,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      * @param string                $eventName
      * @param callable|array|string $callback
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      */
     public function off(string $className, string $eventName, $callback) :self {
         if (empty($this->listeners[$className][$eventName])) {
@@ -268,7 +268,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      * @param null|string $className
      * @param null|string $eventName
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      */
     public function removeAllListeners(?string $className = null, ?string $eventName = null) :self {
         if ($className === null) {
@@ -337,7 +337,7 @@ final class EventEmitterGlobal implements Interfaces\EventEmitterGlobal
      *
      * @param int $maxListenersCount
      *
-     * @return \xobotyi\emittr\EventEmitterGlobal
+     * @return \xobotyi\emittr\GlobalEventHandler
      */
     public function setMaxListenersCount(int $maxListenersCount) :self {
         if ($maxListenersCount < 0) {

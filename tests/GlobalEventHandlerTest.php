@@ -14,10 +14,10 @@ class EmitterTest extends EventEmitter
 {
 }
 
-class EventEmitterGlobalTest extends TestCase
+class GlobalEventHandlerTest extends TestCase
 {
     public function testEventEmitterGlobal() {
-        $globalEmitter = new EventEmitterGlobal();
+        $globalEmitter = new GlobalEventHandler();
 
         $globalEmitter->setMaxListenersCount(5);
         $this->assertEquals(5, $globalEmitter->getMaxListenersCount());
@@ -34,7 +34,7 @@ class EventEmitterGlobalTest extends TestCase
     }
 
     public function testEventEmitterGlobalOff() {
-        $globalEmitter = new EventEmitterGlobal();
+        $globalEmitter = new GlobalEventHandler();
 
         $cb1 = function () { };
         $cb2 = function (Event $e) { };
@@ -66,7 +66,7 @@ class EventEmitterGlobalTest extends TestCase
     }
 
     public function testEventEmitterGlobalPrependEvents() {
-        $globalEmitter = new EventEmitterGlobal();
+        $globalEmitter = new GlobalEventHandler();
 
         $cb1 = function () { };
         $cb2 = function (Event $e) { };
@@ -88,7 +88,7 @@ class EventEmitterGlobalTest extends TestCase
     }
 
     public function testEventEmitterGlobalRemoveAllListeners() {
-        $globalEmitter = new EventEmitterGlobal();
+        $globalEmitter = new GlobalEventHandler();
 
         $cb1 = function () { };
         $cb2 = function (Event $e) { };
@@ -119,7 +119,7 @@ class EventEmitterGlobalTest extends TestCase
     }
 
     public function testEventEmitterGlobalEventEmission() {
-        $globalEmitter = new EventEmitterGlobal();
+        $globalEmitter = new GlobalEventHandler();
         $ee            = new EmitterTest($globalEmitter);
         $res           = '';
 
@@ -148,8 +148,23 @@ class EventEmitterGlobalTest extends TestCase
         $anonymousEE->emit('test'); // anonymous class wont trigger global event;
     }
 
+    public function testEventEmitterGlobalLoadListeners() {
+        $globalEmitter = new GlobalEventHandler();
+
+        $globalEmitter->loadListeners([
+                                          'testClass' => [
+                                              'testEvent' => [
+                                                  'testFunction',
+                                                  ['callback' => 'testFunction2', 'once' => true],
+                                              ],
+                                          ],
+                                      ]);
+        $this->assertEquals([[false, 'testFunction'], [true, 'testFunction2'],],
+                            $globalEmitter->getListeners('testClass', 'testEvent'));
+    }
+
     public function testEventEmitterGlobalExceptionMaxListeners() {
-        $globalEmitter = (new EventEmitterGlobal())->setMaxListenersCount(2);
+        $globalEmitter = (new GlobalEventHandler())->setMaxListenersCount(2);
 
         $this->expectException(Exception\EventEmitter::class);
         $globalEmitter->on(EmitterTest::class, 'test1', function (Event $e) { });
@@ -159,11 +174,11 @@ class EventEmitterGlobalTest extends TestCase
 
     public function testEventEmitterGlobalExceptionNotCallable() {
         $this->expectException(Exception\EventEmitter::class);
-        (new EventEmitterGlobal())->on(EmitterTest::class, 'test2', null);
+        (new GlobalEventHandler())->on(EmitterTest::class, 'test2', null);
     }
 
     public function testEventEmitterGlobalExceptionNegativeMaxListeners() {
         $this->expectException(\InvalidArgumentException::class);
-        (new EventEmitterGlobal())->setMaxListenersCount(-1);
+        (new GlobalEventHandler())->setMaxListenersCount(-1);
     }
 }

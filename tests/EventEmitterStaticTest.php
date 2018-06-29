@@ -34,7 +34,7 @@ class EventEmitterStaticTest extends TestCase
         StaticEmitter::getMaxListenersCount();
         StaticEmitter::setMaxListenersCount(0);
         StaticEmitter::setEventEmitter(new EventEmitter());
-        StaticEmitter::setGlobalEmitter(new EventEmitterGlobal());
+        StaticEmitter::setGlobalEmitter(new GlobalEventHandler());
         StaticEmitter::getGlobalEmitter();
 
         $res = '';

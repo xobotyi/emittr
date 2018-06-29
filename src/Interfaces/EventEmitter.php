@@ -10,7 +10,7 @@ namespace xobotyi\emittr\Interfaces;
 
 interface EventEmitter
 {
-    public function __construct(?EventEmitterGlobal $emitterGlobal = null);
+    public function __construct(?GlobalEventHandler $emitterGlobal = null);
 
     /**
      * Emit the new event.
@@ -121,16 +121,16 @@ interface EventEmitter
     /**
      * Get the to global event emitter
      *
-     * @return \xobotyi\emittr\Interfaces\EventEmitterGlobal
+     * @return \xobotyi\emittr\Interfaces\GlobalEventHandler
      */
-    public function getGlobalEmitter() :EventEmitterGlobal;
+    public function getGlobalEmitter() :GlobalEventHandler;
 
     /**
      * Set the global event emitter
      *
-     * @param \xobotyi\emittr\Interfaces\EventEmitterGlobal $emitterGlobal
+     * @param \xobotyi\emittr\Interfaces\GlobalEventHandler $emitterGlobal
      *
      * @return mixed
      */
-    public function setGlobalEmitter(EventEmitterGlobal $emitterGlobal);
+    public function setGlobalEmitter(GlobalEventHandler $emitterGlobal);
 }
