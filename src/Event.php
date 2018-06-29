@@ -54,6 +54,8 @@ class Event
     }
 
     /**
+     * Stop the event propagation.
+     *
      * @return \xobotyi\emittr\Event
      */
     public function stopPropagation() :self {
@@ -63,6 +65,8 @@ class Event
     }
 
     /**
+     * Resume the event propagation
+     *
      * @return \xobotyi\emittr\Event
      */
     public function startPropagation() :self {
@@ -72,6 +76,8 @@ class Event
     }
 
     /**
+     * Check if event is propagatable
+     *
      * @return bool
      */
     public function isPropagatable() :bool {
@@ -79,6 +85,8 @@ class Event
     }
 
     /**
+     * Return the event name
+     *
      * @return string
      */
     public function getEventName() :string {
@@ -86,6 +94,8 @@ class Event
     }
 
     /**
+     * Return the event payload
+     *
      * @return mixed|null
      */
     public function getPayload() {
@@ -93,6 +103,8 @@ class Event
     }
 
     /**
+     * Return the object emitted the event
+     *
      * @return object|null
      */
     public function getSourceObject() {
@@ -100,6 +112,8 @@ class Event
     }
 
     /**
+     * Return the name of class emitted the event
+     *
      * @return string|null
      */
     public function getSourceClass() {
