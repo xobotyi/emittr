@@ -38,6 +38,9 @@ Library uses PSR-4 autoloader standard and always has 100% tests coverage.
 4. Ability to stop the event propagation
 5. Static and non-static variations of event emitter  
 
+Emittr's key feature is GlobalEventHandler which allow you to assign event listeners event if nor event emitter nor it's listener wasn't declared yet.  
+During lifecycle, event firstly propagates through all listeners assigned over it's emitter and then through listeners assigned over global handler, if event propagation wasn't stopped by any listener. 
+
 ## Requirements
 * [PHP](https://php.net/) 7.1+
 
@@ -71,7 +74,7 @@ or you can use global emitter to assign handler
 use xobotyi\emittr;
 
 // note that neiter MostAwesomeClass class nor awesomeCallback function was not defined yet!
-emittr\EventEmitterGlobal::getInstance()
+emittr\GlobalEventHandler::getInstance()
                          ->once("MostAwesomeClass", 'testEvent', 'awesomeCallback')
                          ->once("MostAwesomeClass", 'testEvent', 'nonAwesomeCallback');
 
@@ -89,3 +92,59 @@ function nonAwesomeCallback() { echo "emittr is awful!" . PHP_EOL; }
 
 MostAwesomeClass::emit('testEvent', ['message' => "eittr is awesome!"]);
 ```
+
+## Index
+- class \xobotyi\emittr\Event  
+    - _public function_ **stopPropagation**() :self;
+    - _public function_ **startPropagation**() :self;
+    - _public function_ **isPropagatable**() :bool;
+    - _public function_ **getEventName**() :string;
+    - _public function_ **getPayload**() :mixed;
+    - _public function_ **getSourceObject**() :mixed;
+    - _public function_ **getSourceClass**() :?string
+- class \xobotyi\emittr\EventEmitter  
+    - _public function_ **emit**($event, $payload = null) :self;
+    - _public function_ **on**(string $eventName, $callback) :self;
+    - _public function_ **once**(string $eventName, $callback) :self;
+    - _public function_ **prependListener**(string $eventName, $callback) :self;
+    - _public function_ **prependOnceListener**(string $eventName, $callback) :self;
+    - _public function_ **off**(string $eventName, $callback) :self;
+    - _public function_ **removeAllListeners**(?string $eventName = null) :self;
+    - _public function_ **getEventNames**() :array;
+    - _public function_ **getListeners**(?string $eventName = null) :array;
+    - _public function_ **getMaxListenersCount**() :int;
+    - _public function_ **setMaxListenersCount**(int $maxListenersCount) :self;
+    - _public function_ **getGlobalEmitter**() :Interfaces\GlobalEventHandler;
+    - _public function_ **setGlobalEmitter**(Interfaces\GlobalEventHandler $emitterGlobal) :self;
+- trait \xobotyi\emittr\Traits\EventEmitterStatic  
+    - _public static function_ **getEventEmitter**() :EventEmitter;
+    - _public static function_ **setEventEmitter**(EventEmitter $eventEmitter) :EventEmitter;
+    - _public static function_ **emit**(string $eventName, $payload = null) :void;
+    - _public static function_ **on**(string $eventName, $callback) :void;
+    - _public static function_ **once**(string $eventName, $callback) :void;
+    - _public static function_ **prependListener**(string $eventName, $callback) :void;
+    - _public static function_ **prependOnceListener**(string $eventName, $callback) :void;
+    - _public static function_ **off**(string $eventName, $callback);
+    - _public static function_ **removeAllListeners**(?string $eventName = null) :void;
+    - _public static function_ **getListeners**(?string $eventName = null) :array;
+    - _public static function_ **getMaxListenersCount**() :int;
+    - _public static function_ **setMaxListenersCount**(int $maxListenersCount) :void;
+    - _public static function_ **getGlobalEmitter**() :GlobalEventHandler;
+    - _public static function_ **setGlobalEmitter**(GlobalEventHandler $emitterGlobal) :void;
+- class \xobotyi\emittr\GlobalEventHandler  
+    - _public static function_ **getInstance**() :self;
+    - _public static function_ **propagateEvent**(Event $event, array &$eventsListeners) :bool;
+    - _public static function_ **isValidCallback**($callback) :bool;
+    - _public static function_ **storeCallback**(array &$arrayToStore, string $eventName, $callback, int $maxListeners = 10, bool $once = false, bool $prepend = false) :void;
+    - _public function_ **loadListeners**(array $listeners) :self;
+    - _public function_ **on**(string $className, string $eventName, $callback) :self;
+    - _public function_ **once**(string $className, string $eventName, $callback) :self;
+    - _public function_ **prependListener**(string $className, string $eventName, $callback) :self;
+    - _public function_ **prependOnceListener**(string $className, string $eventName, $callback) :self;
+    - _public function_ **off**(string $className, string $eventName, $callback) :self;
+    - _public function_ **removeAllListeners**(?string $className = null, ?string $eventName = null) :self;
+    - _public function_ **getEventNames**(string $className) :array;
+    - _public function_ **getListeners**(?string $className = null, ?string $eventName = null) :array;
+    - _public function_ **getMaxListenersCount**() :int;
+    - _public function_ **setMaxListenersCount**(int $maxListenersCount) :self;
+    - _public function_ **propagateEventGlobal**(Event $event) :bool;
